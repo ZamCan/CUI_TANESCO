@@ -1,0 +1,29 @@
+/*
+ * :connection - the meter connection boundary.
+ *
+ * Also pure Kotlin/JVM on purpose. The connection layer is the part of this
+ * codebase most likely to change shape once legitimate technical research is
+ * complete, and it must stay swappable between Android and a future iOS
+ * implementation. Keeping it free of Android APIs means an adapter can be
+ * written and unit tested without an emulator.
+ */
+plugins {
+    alias libs.plugins.kotlin.jvm
+}
+
+dependencies {
+    // `api` because consumers program against the connection contract itself
+    // (states, capabilities, results).
+    api project(':core')
+    implementation libs.kotlinx.coroutines.core
+
+    testImplementation libs.junit
+    testImplementation libs.kotlinx.coroutines.test
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'failed'
+        exceptionFormat = 'full'
+    }
+}

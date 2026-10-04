@@ -1,0 +1,111 @@
+/*
+ * Root build script.
+ *
+ * Plugins are declared here with `apply false` so every module opts in
+ * individually while the whole build resolves one consistent set of plugin
+ * versions from gradle/libs.versions.toml.
+ */
+plugins {
+    alias libs.plugins.android.application apply false
+    alias libs.plugins.android.library apply false
+    alias libs.plugins.kotlin.android apply false
+    alias libs.plugins.kotlin.jvm apply false
+    alias libs.plugins.kotlin.compose apply false
+}
+
+// Captured as locals so the `subprojects` closure below does not depend on
+// version-catalog accessors resolving inside a nested delegate.
+def compileSdkVersion = libs.versions.compileSdk.get().toInteger()
+def minSdkVersion = libs.versions.minSdk.get().toInteger()
+def buildTools = libs.versions.buildTools.get()
+def javaVersion = JavaVersion.VERSION_17
+
+subprojects {
+    // --- Android modules ---------------------------------------------------
+    plugins.withId('com.android.application') {
+        android {
+            compileSdk = compileSdkVersion
+            buildToolsVersion = buildTools
+            defaultConfig {
+                minSdk = minSdkVersion
+            }
+            compileOptions {
+                sourceCompatibility = javaVersion
+                targetCompatibility = javaVersion
+            }
+            // No module needs generated BuildConfig constants; application
+            // metadata is read through the platform layer instead.
+            buildFeatures {
+                buildConfig = false
+            }
+            lint {
+                abortOnError = false
+                checkReleaseBuilds = false
+            }
+        }
+    }
+
+    plugins.withId('com.android.library') {
+        android {
+            compileSdk = compileSdkVersion
+            buildToolsVersion = buildTools
+            defaultConfig {
+                minSdk = minSdkVersion
+            }
+            compileOptions {
+                sourceCompatibility = javaVersion
+                targetCompatibility = javaVersion
+            }
+            lint {
+                abortOnError = false
+                checkReleaseBuilds = false
+            }
+        }
+    }
+
+    // --- Kotlin: JVM bytecode target --------------------------------------
+    // A Java toolchain is deliberately NOT requested: the Termux environment
+    // provides only JDK 21, and asking for toolchain 17 would make Gradle try
+    // to provision a second JDK. The current JDK emits Java 17 bytecode.
+    plugins.withId('org.jetbrains.kotlin.android') {
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = '17'
+            }
+        }
+    }
+
+    plugins.withId('org.jetbrains.kotlin.jvm') {
+        java {
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
+        }
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = '17'
+            }
+        }
+        tasks.withType(Test).configureEach {
+            // The build device is memory constrained and shared; unit tests
+            // need a fraction of the Gradle daemon heap.
+            maxHeapSize = '384m'
+        }
+    }
+}
+
+/**
+ * Single-command verification of the whole build.
+ *
+ *   source tools/env.sh && ./gradlew verify
+ */
+tasks.register('verify') {
+    group = 'verification'
+    description = 'Assembles every module, runs all JVM unit tests, and compiles instrumentation tests.'
+    dependsOn ':core:test',
+            ':connection:test',
+            ':data:test',
+            ':platform:testDebugUnitTest',
+            ':tests:testDebugUnitTest',
+            ':app:assembleDebug',
+            ':app:assembleDebugAndroidTest'
+}

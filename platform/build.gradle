@@ -1,0 +1,24 @@
+/*
+ * :platform - Android implementations of the ports declared by :core and :data.
+ *
+ * This is the only module outside :app allowed to import android.*. Supporting
+ * iOS means providing a sibling module with the same public surface; see
+ * docs/architecture/ios-portability.md.
+ */
+plugins {
+    alias libs.plugins.android.library
+    alias libs.plugins.kotlin.android
+}
+
+android {
+    namespace 'com.tanesco.metercompanion.platform'
+}
+
+dependencies {
+    api project(':core')
+    api project(':data')
+    implementation libs.androidx.core.ktx
+
+    testImplementation libs.junit
+    testImplementation libs.kotlinx.coroutines.test
+}

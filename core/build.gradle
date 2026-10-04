@@ -1,0 +1,25 @@
+/*
+ * :core - the domain layer.
+ *
+ * Deliberately a *pure Kotlin/JVM* module: it has no Android dependency at all,
+ * which guarantees that every rule of the application can be compiled,
+ * executed and unit tested on any JVM. Anything that needs a device API belongs
+ * in :platform.
+ */
+plugins {
+    alias libs.plugins.kotlin.jvm
+}
+
+dependencies {
+    implementation libs.kotlinx.coroutines.core
+
+    testImplementation libs.junit
+    testImplementation libs.kotlinx.coroutines.test
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'failed'
+        exceptionFormat = 'full'
+    }
+}

@@ -1,0 +1,30 @@
+/*
+ * :data - local persistence and repositories.
+ *
+ * A pure Kotlin/JVM module as well. It owns the database *contract* (schema,
+ * statements, row mapping, repositories) while the actual SQLite implementation
+ * lives in :platform, because SQLite is an Android platform capability.
+ *
+ * The practical benefit is that repository behaviour - duplicate token
+ * handling, event ordering, default-meter selection - is exercised by fast JVM
+ * unit tests instead of instrumentation tests that cannot run on the build
+ * machine.
+ */
+plugins {
+    alias libs.plugins.kotlin.jvm
+}
+
+dependencies {
+    api project(':core')
+    implementation libs.kotlinx.coroutines.core
+
+    testImplementation libs.junit
+    testImplementation libs.kotlinx.coroutines.test
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'failed'
+        exceptionFormat = 'full'
+    }
+}

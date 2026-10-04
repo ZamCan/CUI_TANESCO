@@ -1,0 +1,48 @@
+/*
+ * TANESCO Meter Companion - Gradle settings.
+ *
+ * The top-level directories of this repository map 1:1 onto Gradle modules so
+ * that the documented architecture and the build structure stay identical:
+ *
+ *   core/        :core        pure Kotlin domain layer (no Android dependency)
+ *   connection/  :connection  pure Kotlin meter-connection boundary
+ *   data/        :data        pure Kotlin persistence contract + repositories
+ *   platform/    :platform    Android library: platform services
+ *   app/         :app         Android application: presentation layer
+ *   tests/       :tests       cross-module verification
+ *
+ * NOTE: these scripts deliberately use the Groovy DSL rather than the Kotlin
+ * DSL. Kotlin DSL script compilation stalls under PRoot on the Termux build
+ * machine, while the Groovy DSL builds reliably. See
+ * docs/decisions/0002-build-script-dsl.md.
+ */
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex 'com\\.android.*'
+                includeGroupByRegex 'com\\.google.*'
+                includeGroupByRegex 'androidx.*'
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'TANESCO-Meter-Companion'
+
+include ':core'
+include ':connection'
+include ':data'
+include ':platform'
+include ':app'
+include ':tests'

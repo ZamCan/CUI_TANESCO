@@ -1,0 +1,28 @@
+/*
+ * :tests - cross-module verification that intentionally does not belong to any
+ * single layer.
+ *
+ * These tests wire the real domain services, real repositories and the real
+ * connection boundary together against in-memory stores. They are what proves
+ * the layers actually compose, rather than only that each one compiles.
+ *
+ * This is an Android library purely so that instrumentation tests are Android
+ * tests; the code under test is plain JVM code.
+ */
+plugins {
+    alias libs.plugins.android.library
+    alias libs.plugins.kotlin.android
+}
+
+android {
+    namespace 'com.tanesco.metercompanion.tests'
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':data')
+    implementation project(':connection')
+
+    testImplementation libs.junit
+    testImplementation libs.kotlinx.coroutines.test
+}

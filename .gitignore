@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# Build outputs
+build/
+.gradle/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.cxx/
+
+# --- Local machine configuration -------------------------------------------
+# ANDROID_HOME differs between Termux and a workstation; never commit it.
+local.properties
+captures/
+.externalNativeBuild/
+
+# --- Android / IDE ----------------------------------------------------------
+*.iml
+.idea/
+.DS_Store
+release/
+*.hprof
+
+# --- Tooling ---------------------------------------------------------------
+# Kotlin build reports are large and machine specific.
+.kotlin/
