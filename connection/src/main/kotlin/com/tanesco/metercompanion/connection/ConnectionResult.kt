@@ -30,7 +30,13 @@ sealed interface ConnectionResult<out T> {
     }
 
     companion object {
-        fun success(value: T): ConnectionResult<T> = Success(value)
+        /**
+         * Wraps [value] in a success.
+         *
+         * Declares its own type parameter rather than reusing the interface's
+         * `out T`, which a companion object cannot see.
+         */
+        fun <T> success(value: T): ConnectionResult<T> = Success(value)
     }
 }
 

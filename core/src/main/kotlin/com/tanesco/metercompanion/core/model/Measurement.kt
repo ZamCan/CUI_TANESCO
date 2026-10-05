@@ -13,12 +13,6 @@ data class Measurement<out T : Number>(
     val unit: String,
     val provenance: Provenance,
 ) {
-    init {
-        require(provenance != Provenance.Unknown) {
-            "A measurement must declare its provenance; absent data is modelled by null, not by a placeholder value."
-        }
-    }
-
     enum class Provenance {
         /** Reported by a meter over an established connection. */
         MeterReported,

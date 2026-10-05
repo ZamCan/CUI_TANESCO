@@ -7,6 +7,7 @@ import com.tanesco.metercompanion.core.model.DomainResult
 import com.tanesco.metercompanion.core.model.UnitSystem
 import com.tanesco.metercompanion.core.repository.SettingsRepository
 import com.tanesco.metercompanion.data.database.DatabaseSchema
+import com.tanesco.metercompanion.data.database.SqlDriver
 import com.tanesco.metercompanion.data.database.SqlValue
 import com.tanesco.metercompanion.data.database.selectFirstOrNull
 import com.tanesco.metercompanion.data.database.selectRows

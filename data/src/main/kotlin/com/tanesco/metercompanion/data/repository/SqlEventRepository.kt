@@ -6,6 +6,7 @@ import com.tanesco.metercompanion.core.model.EventQuery
 import com.tanesco.metercompanion.core.repository.EventRepository
 import com.tanesco.metercompanion.data.database.DatabaseSchema
 import com.tanesco.metercompanion.data.database.SqlCursor
+import com.tanesco.metercompanion.data.database.SqlDriver
 import com.tanesco.metercompanion.data.database.SqlValue
 import com.tanesco.metercompanion.data.database.ValueCodecs.eventCategoryFromStorage
 import com.tanesco.metercompanion.data.database.ValueCodecs.eventSeverityFromStorage
@@ -87,6 +88,10 @@ class SqlEventRepository(
     }
 
     private fun runQuery(query: EventQuery): List<AppEvent> {
+        // Interpolated rather than bound: Android's query API accepts only
+        // string arguments, and `query.limit` is validated to be a positive Int
+        // by EventQuery's own initializer, so it cannot carry SQL.
+        val queryLimit = query.limit
         val filters = mutableListOf<String>()
         val arguments = mutableListOf<SqlValue>()
 
@@ -110,9 +115,9 @@ class SqlEventRepository(
                 SELECT $selectColumns FROM ${DatabaseSchema.Events.TABLE}
                 $whereClause
                 ORDER BY ${DatabaseSchema.Events.OCCURRED_AT} DESC
-                LIMIT ?
+                LIMIT $queryLimit
             """.trimIndent(),
-            arguments = arguments + SqlValue.LongValue(query.limit.toLong()),
+            arguments = arguments,
             transform = ::toAppEvent,
         )
     }

@@ -40,6 +40,11 @@ class ConnectionCoordinator(
     private val eventRepository: EventRepository,
     private val clock: Clock,
     private val idGenerator: IdGenerator,
+    /**
+     * Long-lived scope used to mirror adapter state. It must outlive any single
+     * screen; the application container owns it.
+     */
+    private val scope: CoroutineScope,
 ) {
 
     private val _state = MutableStateFlow<ConnectionState>(initialState())

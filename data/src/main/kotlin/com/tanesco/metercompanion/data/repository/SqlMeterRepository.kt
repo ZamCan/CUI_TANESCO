@@ -55,27 +55,37 @@ class SqlMeterRepository(
     }
 
     override suspend fun archive(id: String): DomainResult<Unit> = ioDispatcher.write {
-        val result = runCatchingStorage {
-            val affected = driver.update(
+        // The default-meter selection lives in settings, not on the row, so
+        // archiving only flags the profile. MeterProfileService clears the
+        // setting if it pointed at this profile.
+        val affected = runCatchingStorage {
+            driver.update(
                 sql = """
                     UPDATE ${DatabaseSchema.Meters.TABLE}
-                    SET ${DatabaseSchema.Meters.IS_ARCHIVED} = 1,
-                        ${DatabaseSchema.Meters.IS_DEFAULT} = 0
+                    SET ${DatabaseSchema.Meters.IS_ARCHIVED} = 1
                     WHERE ${DatabaseSchema.Meters.ID} = ?
                 """.trimIndent(),
                 arguments = listOf(SqlValue.Text(id)),
             )
-            if (affected == 0) {
-                return@runCatchingStorage DomainResult.Failure(
-                    DomainError.NotFound(
-                        code = "meter.not_found",
-                        entity = "meter",
-                        id = id,
-                    ),
-                )
-            }
-            Unit
         }
+
+        val result = affected.fold(
+            onSuccess = { updated ->
+                if (updated == 0) {
+                    DomainResult.Failure(
+                        DomainError.NotFound(
+                            code = "meter.not_found",
+                            entity = "meter",
+                            id = id,
+                        ),
+                    )
+                } else {
+                    DomainResult.Success(Unit)
+                }
+            },
+            onFailure = { error -> DomainResult.Failure(error) },
+        )
+
         if (result is DomainResult.Success) changes.notifyChanged()
         result
     }
@@ -98,6 +108,7 @@ class SqlMeterRepository(
                 SqlValue.of(excludeProfileId),
                 SqlValue.of(excludeProfileId),
             ),
+            transform = { cursor -> cursor.getString(0) },
         ) != null
     }
 
@@ -164,7 +175,7 @@ internal fun toMeterProfile(cursor: SqlCursor): MeterProfile = MeterProfile(
  */
 internal inline fun <T> runCatchingStorage(block: () -> T): DomainResult<T> = try {
     DomainResult.Success(block())
-} catch (cancellation: kotlinx.coroutines.cancellation.CancellationException) {
+} catch (cancellation: kotlinx.coroutines.CancellationException) {
     throw cancellation
 } catch (throwable: Throwable) {
     DomainResult.Failure(

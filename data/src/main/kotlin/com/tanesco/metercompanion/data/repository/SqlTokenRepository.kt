@@ -9,6 +9,7 @@ import com.tanesco.metercompanion.core.model.TokenTransferState
 import com.tanesco.metercompanion.core.repository.TokenRepository
 import com.tanesco.metercompanion.data.database.DatabaseSchema
 import com.tanesco.metercompanion.data.database.SqlCursor
+import com.tanesco.metercompanion.data.database.SqlDriver
 import com.tanesco.metercompanion.data.database.SqlValue
 import com.tanesco.metercompanion.data.database.ValueCodecs.decodeValidation
 import com.tanesco.metercompanion.data.database.ValueCodecs.encodeValidation
@@ -96,8 +97,8 @@ class SqlTokenRepository(
 
     override suspend fun setTransferState(id: String, state: TokenTransferState): DomainResult<Unit> =
         ioDispatcher.write {
-            val result = runCatchingStorage {
-                val updated = driver.update(
+            val affected = runCatchingStorage {
+                driver.update(
                     sql = """
                         UPDATE ${DatabaseSchema.Tokens.TABLE}
                         SET ${DatabaseSchema.Tokens.TRANSFER_STATE} = ?
@@ -105,13 +106,25 @@ class SqlTokenRepository(
                     """.trimIndent(),
                     arguments = listOf(SqlValue.Text(state.toStorage()), SqlValue.Text(id)),
                 )
-                if (updated == 0) {
-                    return@runCatchingStorage DomainResult.Failure(
-                        DomainError.NotFound(code = "token.not_found", entity = "token", id = id),
-                    )
-                }
-                Unit
             }
+
+            val result = affected.fold(
+                onSuccess = { updated ->
+                    if (updated == 0) {
+                        DomainResult.Failure(
+                            DomainError.NotFound(
+                                code = "token.not_found",
+                                entity = "token",
+                                id = id,
+                            ),
+                        )
+                    } else {
+                        DomainResult.Success(Unit)
+                    }
+                },
+                onFailure = { error -> DomainResult.Failure(error) },
+            )
+
             if (result is DomainResult.Success) changes.notifyChanged()
             result
         }
@@ -135,6 +148,9 @@ class SqlTokenRepository(
 
         val whereClause = if (filters.isEmpty()) "" else "WHERE " + filters.joinToString(" AND ")
 
+        // Interpolated rather than bound; see SqlEventRepository.runQuery.
+        val queryLimit = query.limit
+
         // The total is counted without the LIMIT so the UI can honestly say
         // "showing N of M".
         val total = driver.selectFirstOrNull(
@@ -148,9 +164,9 @@ class SqlTokenRepository(
                 SELECT $selectColumns FROM ${DatabaseSchema.Tokens.TABLE}
                 $whereClause
                 ORDER BY ${DatabaseSchema.Tokens.ENTERED_AT} DESC
-                LIMIT ?
+                LIMIT $queryLimit
             """.trimIndent(),
-            arguments = arguments + SqlValue.LongValue(query.limit.toLong()),
+            arguments = arguments,
             transform = ::toTokenRecord,
         )
 

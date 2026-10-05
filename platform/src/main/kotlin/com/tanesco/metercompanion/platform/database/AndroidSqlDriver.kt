@@ -46,19 +46,19 @@ class AndroidSqlDriver(
     override fun insert(sql: String, arguments: List<SqlValue>): Long {
         val db = database
         db.execSQL(sql, arguments.toBindArgs())
-        db.rawQuery(LAST_INSERT_ROW_ID, null).use { cursor ->
+        db.rawQuery(SELECT_LAST_INSERT_ROW_ID, null).use { cursor ->
             return if (cursor.moveToFirst()) cursor.getLong(0) else -1L
         }
     }
 
     override fun update(sql: String, arguments: List<SqlValue>): Int =
-        database.update(sql, null, arguments.toBindArgs())
+        runStatement(sql, arguments)
 
     override fun delete(sql: String, arguments: List<SqlValue>): Int =
-        database.delete(sql, arguments.toBindArgs())
+        runStatement(sql, arguments)
 
     override fun query(sql: String, arguments: List<SqlValue>): SqlCursor =
-        AndroidSqlCursor(database.rawQuery(sql, arguments.toBindArgs()))
+        AndroidSqlCursor(database.rawQuery(sql, arguments.toQueryArgs()))
 
     override fun <T> transaction(block: SqlDriver.() -> T): T {
         val db = database
@@ -75,9 +75,26 @@ class AndroidSqlDriver(
     override fun close() {
         helper.close()
     }
+
+    /**
+     * Executes a DML statement and reports how many rows it affected.
+     *
+     * Android's `SQLiteDatabase.update`/`delete` take a *table* name plus a
+     * where-clause and cannot express a full statement, a join, or the
+     * `ON CONFLICT` clauses this application uses. Executing the statement and
+     * reading SQLite's own `changes()` keeps the port's contract, which is
+     * "here is the statement", intact.
+     */
+    private fun runStatement(sql: String, arguments: List<SqlValue>): Int {
+        val db = database
+        db.execSQL(sql, arguments.toBindArgs())
+        db.rawQuery(SELECT_CHANGES, null).use { cursor ->
+            return if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        }    }
 }
 
-private const val LAST_INSERT_ROW_ID = "SELECT last_insert_rowid()"
+private const val SELECT_CHANGES = "SELECT changes()"
+private const val SELECT_LAST_INSERT_ROW_ID = "SELECT last_insert_rowid()"
 
 /**
  * Adapts an Android [Cursor] to the portable [SqlCursor] port.

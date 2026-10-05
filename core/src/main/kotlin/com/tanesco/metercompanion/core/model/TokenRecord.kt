@@ -35,6 +35,32 @@ data class TokenRecord(
 ) {
     /** Local structural verdict, phrased so it cannot be read as meter acceptance. */
     val localCheckLabel: String get() = status.label
+
+    companion object {
+        /**
+         * Factory that stamps a record with the current time.
+         *
+         * Centralising construction means no caller can forget a timestamp,
+         * which would otherwise silently corrupt "recent activity" ordering.
+         */
+        fun create(
+            id: String,
+            normalizedValue: String,
+            displayValue: String,
+            status: TokenStatus,
+            meterId: String?,
+            clock: Clock,
+            validation: TokenValidationReport? = null,
+        ): TokenRecord = TokenRecord(
+            id = id,
+            normalizedValue = normalizedValue,
+            displayValue = displayValue,
+            status = status,
+            meterId = meterId,
+            enteredAtMillis = clock.nowMillis(),
+            validation = validation,
+        )
+    }
 }
 
 /** Outcome of the application's own, local, structural checks. */
@@ -128,24 +154,3 @@ data class TokenHistory(
         fun empty(): TokenHistory = TokenHistory(emptyList(), 0)
     }
 }
-
-/**
- * Convenience factory that stamps a [TokenRecord] with the current time.
- */
-fun TokenRecord.newRecord(
-    id: String,
-    normalizedValue: String,
-    displayValue: String,
-    status: TokenStatus,
-    meterId: String?,
-    clock: Clock,
-    validation: TokenValidationReport? = null,
-): TokenRecord = TokenRecord(
-    id = id,
-    normalizedValue = normalizedValue,
-    displayValue = displayValue,
-    status = status,
-    meterId = meterId,
-    enteredAtMillis = clock.nowMillis(),
-    validation = validation,
-)

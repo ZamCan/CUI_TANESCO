@@ -11,16 +11,30 @@ import com.tanesco.metercompanion.core.repository.MeterRepository
 import com.tanesco.metercompanion.core.repository.SettingsRepository
 import com.tanesco.metercompanion.core.time.Clock
 import com.tanesco.metercompanion.core.time.IdGenerator
+import com.tanesco.metercompanion.core.validation.Fields
 import com.tanesco.metercompanion.core.validation.ValidationResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
 /**
+ * Outcome of submitting the Meter Setup form.
+ *
+ * A dedicated type rather than [DomainResult], because a form has three
+ * meaningfully different outcomes - stored, rejected with per-field messages, or
+ * failed for an unrelated reason - and the screen must render each differently.
+ */
+sealed interface MeterProfileFormResult {
+    data class Saved(val profile: MeterProfile) : MeterProfileFormResult
+    data class Invalid(val validation: ValidationResult) : MeterProfileFormResult
+    data class Failed(val error: DomainError) : MeterProfileFormResult
+}
+
+/**
  * Application service for meter profiles.
  *
  * Screens call this; they never touch [MeterRepository] directly. Every method
- * here is a complete, already-logged business operation, which is what keeps
- * the Activity screen trustworthy.
+ * here is a complete, already-logged business operation, which is what keeps the
+ * Activity screen trustworthy.
  */
 class MeterProfileService(
     private val meterRepository: MeterRepository,
@@ -34,12 +48,18 @@ class MeterProfileService(
     fun observeAll(): Flow<List<MeterProfile>> = meterRepository.observeAll()
 
     /**
-     * The profile the user selected as their meter, resolved against the
-     * stored id.
+     * Validates a draft without any I/O, so a form can show live feedback on
+     * every keystroke.
+     */
+    fun validateDraft(draft: MeterProfileDraft): ValidationResult = validator.validate(draft)
+
+    /**
+     * The profile the user selected as their meter, resolved against the stored
+     * id.
      *
-     * Returns `null` when no meter is configured, or when the stored id points
-     * at a profile that has since been archived - in which case the setting is
-     * repaired so the UI does not repeatedly resolve to nothing.
+     * Returns `null` when no meter is configured. When the stored id points at a
+     * profile that has since been archived, resolution falls back to the first
+     * active profile rather than showing nothing.
      */
     fun observeDefaultMeter(): Flow<MeterProfile?> =
         combine(settingsRepository.observe(), meterRepository.observeAll()) { settings, profiles ->
@@ -52,59 +72,118 @@ class MeterProfileService(
     private fun resolveDefault(settings: AppSettings, profiles: List<MeterProfile>): MeterProfile? {
         val active = profiles.filterNot { it.isArchived }
         val selected = settings.defaultMeterId?.let { id -> active.firstOrNull { it.id == id } }
-        // Fall back to the only/first active profile so a fresh install with one
-        // meter configured behaves sensibly without an explicit selection.
+        // Falling back to the first active profile means a user who has
+        // configured exactly one meter gets a sensible screen without having to
+        // make an explicit selection.
         return selected ?: active.firstOrNull()
     }
 
     /**
-     * Validates and stores a new profile.
+     * Creates or updates a profile from a form draft.
      *
-     * When it is the first profile it also becomes the default, because a user
-     * who has configured exactly one meter has implicitly chosen it.
+     * Pass [editingProfileId] to update an existing profile; leave it null to
+     * create one. When creating the first meter it also becomes the default,
+     * because a user who has configured exactly one meter has implicitly chosen
+     * it.
      */
-    suspend fun create(draft: MeterProfileDraft): DomainResult<MeterProfile> {
+    suspend fun submit(
+        draft: MeterProfileDraft,
+        editingProfileId: String? = null,
+    ): MeterProfileFormResult {
         val existing = meterRepository.getAll()
-        val created = validator.create(
-            draft = draft,
-            id = idGenerator.newId(),
-            createdAtMillis = clock.nowMillis(),
-            existingProfiles = existing,
-        )
+        val validation = validator.validate(draft)
+        if (!validation.isValid) {
+            events.warning(
+                category = EventCategory.Meter,
+                name = EventNames.METER_PROFILE_REJECTED,
+                summary = "Meter details were not accepted",
+                detail = validation.all().joinToString("; ") { "${it.field}: ${it.message}" },
+                userInitiated = true,
+            )
+            return MeterProfileFormResult.Invalid(validation)
+        }
 
-        val profile = when (created) {
-            is Result.Invalid -> {
-                events.warning(
-                    category = EventCategory.Meter,
-                    name = EventNames.METER_PROFILE_REJECTED,
-                    summary = "Meter details were not accepted",
-                    detail = created.error.all().joinToString("; ") { "${it.field}: ${it.message}" },
-                    userInitiated = true,
+        val normalized = MeterProfileValidator.normalizeAccountNumber(draft.accountNumber)
+        val conflicting = existing.firstOrNull {
+            it.id != editingProfileId &&
+                MeterProfileValidator.normalizeAccountNumber(it.accountNumber) == normalized
+        }
+        if (conflicting != null) {
+            val conflict = ValidationResult.Valid.withField(
+                Fields.ACCOUNT_NUMBER,
+                "This account number is already used by \"${conflicting.displayName}\".",
+            )
+            events.warning(
+                category = EventCategory.Meter,
+                name = EventNames.METER_PROFILE_REJECTED,
+                summary = "Account number already in use",
+                meterId = editingProfileId,
+                userInitiated = true,
+            )
+            return MeterProfileFormResult.Invalid(conflict)
+        }
+
+        val now = clock.nowMillis()
+
+        val profile = if (editingProfileId == null) {
+            MeterProfile(
+                id = idGenerator.newId(),
+                accountNumber = draft.accountNumber.trim(),
+                displayName = draft.displayName.trim(),
+                category = draft.category,
+                phase = draft.phase,
+                region = draft.region.trim().ifEmpty { null },
+                notes = draft.notes.trim().ifEmpty { null },
+                createdAtMillis = now,
+                updatedAtMillis = now,
+            )
+        } else {
+            val current = existing.firstOrNull { it.id == editingProfileId }
+                ?: return MeterProfileFormResult.Failed(
+                    DomainError.NotFound(
+                        code = "meter.not_found",
+                        entity = "meter",
+                        id = editingProfileId,
+                    ),
                 )
-                return DomainResult.Failure(created.error.toDomainError())
-            }
-
-            is Result.Valid -> created.value
+            current.copy(
+                accountNumber = draft.accountNumber.trim(),
+                displayName = draft.displayName.trim(),
+                category = draft.category,
+                phase = draft.phase,
+                region = draft.region.trim().ifEmpty { null },
+                notes = draft.notes.trim().ifEmpty { null },
+                updatedAtMillis = now,
+            )
         }
 
         val stored = meterRepository.upsert(profile)
-        if (stored is DomainResult.Failure) return stored
+        if (stored is DomainResult.Failure) return MeterProfileFormResult.Failed(stored.error)
 
-        val isFirstProfile = existing.none { !it.isArchived }
-        if (isFirstProfile) {
-            settingsRepository.set(settingsRepository.get().copy(defaultMeterId = profile.id))
+        if (editingProfileId == null) {
+            if (existing.none { !it.isArchived }) {
+                settingsRepository.set(settingsRepository.get().copy(defaultMeterId = profile.id))
+            }
+            events.success(
+                category = EventCategory.Meter,
+                name = EventNames.METER_PROFILE_CREATED,
+                summary = "Meter profile created",
+                detail = "account ${profile.accountNumber}",
+                meterId = profile.id,
+                userInitiated = true,
+            )
+        } else {
+            events.info(
+                category = EventCategory.Meter,
+                name = EventNames.METER_PROFILE_UPDATED,
+                summary = "Meter profile updated",
+                detail = "account ${profile.accountNumber}",
+                meterId = profile.id,
+                userInitiated = true,
+            )
         }
 
-        events.success(
-            category = EventCategory.Meter,
-            name = EventNames.METER_PROFILE_CREATED,
-            summary = "Meter profile created",
-            detail = "account ${profile.accountNumber}",
-            meterId = profile.id,
-            userInitiated = true,
-        )
-
-        return DomainResult.Success(profile)
+        return MeterProfileFormResult.Saved(profile)
     }
 
     suspend fun archive(id: String): DomainResult<Unit> {
@@ -130,7 +209,7 @@ class MeterProfileService(
      *
      * Passing `null` clears the selection; resolution then falls back to the
      * first active profile, which is why the UI labels that behaviour
-     * explicitly rather than implying "no meter".
+     * explicitly rather than implying "no meter configured".
      */
     suspend fun setDefaultMeter(id: String?): DomainResult<Unit> {
         if (id != null) {
@@ -142,7 +221,6 @@ class MeterProfileService(
                 return DomainResult.Failure(
                     DomainError.Validation(
                         code = "meter.archived",
-                        field = com.tanesco.metercompanion.core.validation.Fields.ACCOUNT_NUMBER,
                         detail = "An archived meter cannot be selected as the default.",
                     ),
                 )
@@ -162,16 +240,3 @@ class MeterProfileService(
         return result
     }
 }
-
-/**
- * Presents a [ValidationResult] through the domain's error vocabulary.
- *
- * The mapping is centralised so that a form failure always produces a
- * `validation.invalid_form` code carrying the field messages, and so that the
- * UI has exactly one shape to render.
- */
-fun ValidationResult.toDomainError(): DomainError.Validation =
-    DomainError.Validation(
-        code = "validation.invalid_form",
-        detail = all().joinToString("; ") { "${it.field}: ${it.message}" },
-    )

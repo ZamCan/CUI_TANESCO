@@ -1,7 +1,7 @@
 package com.tanesco.metercompanion.core.diagnostics
 
 import com.tanesco.metercompanion.core.time.Clock
-import kotlinx.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CancellationException
 
 /**
  * Aggregates [DiagnosticProbe]s into a single report.
@@ -20,31 +20,35 @@ class DiagnosticsService(
 ) {
 
     suspend fun generate(): DiagnosticsReport {
-        val subsystems = probes.map { probe -> runProbe(probe) }
+        // A probe owns one *or more* subsystem groups, so results are flattened
+        // rather than mapped one-to-one.
+        val subsystems = probes.flatMap { probe -> runProbe(probe) }
         return DiagnosticsReport(
             generatedAtMillis = clock.nowMillis(),
             subsystems = subsystems,
         )
     }
 
-    private suspend fun runProbe(probe: DiagnosticProbe): SubsystemReport = try {
+    private suspend fun runProbe(probe: DiagnosticProbe): List<SubsystemReport> = try {
         probe.run()
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (throwable: Throwable) {
         // The exception *type* is reported, never its message: a platform
         // exception message can carry data that must not be displayed.
-        SubsystemReport(
-            id = SUBSYSTEM_UNKNOWN,
-            title = "Unnamed subsystem",
-            summary = "A diagnostic probe failed to run.",
-            checks = listOf(
-                DiagnosticCheck(
-                    id = "diagnostics.probe_failure",
-                    label = "Diagnostic probe",
-                    status = DiagnosticStatus.Error,
-                    detail = "Probe threw ${throwable::class.java.simpleName}.",
-                    remediation = "This is a defect; the probe should handle its own failures.",
+        listOf(
+            SubsystemReport(
+                id = SUBSYSTEM_UNKNOWN,
+                title = "Unnamed subsystem",
+                summary = "A diagnostic probe failed to run.",
+                checks = listOf(
+                    DiagnosticCheck(
+                        id = "diagnostics.probe_failure",
+                        label = "Diagnostic probe",
+                        status = DiagnosticStatus.Error,
+                        detail = "Probe threw ${throwable::class.java.simpleName}.",
+                        remediation = "This is a defect; a probe should handle its own failures.",
+                    ),
                 ),
             ),
         )

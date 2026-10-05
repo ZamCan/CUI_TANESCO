@@ -1,5 +1,7 @@
 package com.tanesco.metercompanion.core.model
 
+import kotlinx.coroutines.CancellationException
+
 /**
  * Outcome of a domain operation.
  *
@@ -52,7 +54,7 @@ sealed interface DomainResult<out T> {
             block: () -> T,
         ): DomainResult<T> = try {
             Success(block())
-        } catch (cancellation: kotlinx.coroutines.cancellation.CancellationException) {
+        } catch (cancellation: kotlinx.coroutines.CancellationException) {
             // Never swallow coroutine cancellation: it is control flow, not failure.
             throw cancellation
         } catch (throwable: Throwable) {

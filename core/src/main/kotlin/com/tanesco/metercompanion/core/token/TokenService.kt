@@ -12,7 +12,6 @@ import com.tanesco.metercompanion.core.model.TokenStatus
 import com.tanesco.metercompanion.core.model.TokenTransferState
 import com.tanesco.metercompanion.core.model.TokenValidationOutcome
 import com.tanesco.metercompanion.core.model.TokenValidationReport
-import com.tanesco.metercompanion.core.model.newRecord
 import com.tanesco.metercompanion.core.repository.SettingsRepository
 import com.tanesco.metercompanion.core.repository.TokenRepository
 import com.tanesco.metercompanion.core.time.Clock
@@ -127,7 +126,7 @@ class TokenService(
             else -> TokenStatus.StructurallyValid
         }
 
-        val record = TokenRecord.newRecord(
+        val record = TokenRecord.create(
             id = idGenerator.newId(),
             normalizedValue = normalized,
             displayValue = TokenNormalizer.formatForDisplay(normalized, profile.displayGroupSize),

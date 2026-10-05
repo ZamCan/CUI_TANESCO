@@ -7,6 +7,7 @@ import com.tanesco.metercompanion.core.model.SessionOutcome
 import com.tanesco.metercompanion.core.repository.MeterSessionRepository
 import com.tanesco.metercompanion.data.database.DatabaseSchema
 import com.tanesco.metercompanion.data.database.SqlCursor
+import com.tanesco.metercompanion.data.database.SqlDriver
 import com.tanesco.metercompanion.data.database.SqlValue
 import com.tanesco.metercompanion.data.database.ValueCodecs.sessionOutcomeFromStorage
 import com.tanesco.metercompanion.data.database.ValueCodecs.toStorage
@@ -64,8 +65,8 @@ class SqlMeterSessionRepository(
         outcome: SessionOutcome,
         failureCode: String?,
     ): DomainResult<Unit> = ioDispatcher.write {
-        val result = runCatchingStorage {
-            val updated = driver.update(
+        val affected = runCatchingStorage {
+            driver.update(
                 sql = """
                     UPDATE ${DatabaseSchema.MeterSessions.TABLE}
                     SET ${DatabaseSchema.MeterSessions.ENDED_AT} = ?,
@@ -80,17 +81,25 @@ class SqlMeterSessionRepository(
                     SqlValue.Text(id),
                 ),
             )
-            if (updated == 0) {
-                return@runCatchingStorage DomainResult.Failure(
-                    DomainError.NotFound(
-                        code = "session.not_found",
-                        entity = "meter session",
-                        id = id,
-                    ),
-                )
-            }
-            Unit
         }
+
+        val result = affected.fold(
+            onSuccess = { updated ->
+                if (updated == 0) {
+                    DomainResult.Failure(
+                        DomainError.NotFound(
+                            code = "session.not_found",
+                            entity = "meter session",
+                            id = id,
+                        ),
+                    )
+                } else {
+                    DomainResult.Success(Unit)
+                }
+            },
+            onFailure = { error -> DomainResult.Failure(error) },
+        )
+
         if (result is DomainResult.Success) changes.notifyChanged()
         result
     }
@@ -117,15 +126,19 @@ class SqlMeterSessionRepository(
         )
     }
 
-    private fun queryRecent(limit: Int): List<MeterSession> = driver.selectRows(
-        sql = """
-            SELECT $selectColumns FROM ${DatabaseSchema.MeterSessions.TABLE}
-            ORDER BY ${DatabaseSchema.MeterSessions.STARTED_AT} DESC
-            LIMIT ?
-        """.trimIndent(),
-        arguments = listOf(SqlValue.LongValue(limit.toLong())),
-        transform = ::toMeterSession,
-    )
+    private fun queryRecent(limit: Int): List<MeterSession> {
+        // Interpolated rather than bound; see SqlEventRepository.runQuery.
+        val queryLimit = limit
+        return driver.selectRows(
+            sql = """
+                SELECT $selectColumns FROM ${DatabaseSchema.MeterSessions.TABLE}
+                ORDER BY ${DatabaseSchema.MeterSessions.STARTED_AT} DESC
+                LIMIT $queryLimit
+            """.trimIndent(),
+            arguments = emptyList(),
+            transform = ::toMeterSession,
+        )
+    }
 }
 
 /** Maps a row selected in [DatabaseSchema.MeterSessions.ALL_COLUMNS] order. */

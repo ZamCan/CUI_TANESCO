@@ -29,8 +29,10 @@ sealed interface DomainError {
         val detail: String,
         override val cause: Throwable? = null,
     ) : DomainError {
+        // `this.field` is required: a bare `field` inside a property accessor
+        // refers to the backing field, not to this constructor property.
         override val technicalDetail: String
-            get() = if (field == null) detail else "$field: $detail"
+            get() = if (this.field == null) detail else "${this.field}: $detail"
     }
 
     data class NotFound(

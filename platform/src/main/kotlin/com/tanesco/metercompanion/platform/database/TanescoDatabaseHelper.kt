@@ -53,7 +53,12 @@ class TanescoDatabaseHelper(
     }
 }
 
-/** Converts [SqlValue] into the `Array<Any?>` Android's binding API expects. */
+/**
+ * Converts [SqlValue] into the `Array<Any?>` Android's statement binding accepts.
+ *
+ * Used for INSERT, UPDATE and DELETE, where Android supports fully typed
+ * binding.
+ */
 internal fun List<SqlValue>.toBindArgs(): Array<Any?> = map { value ->
     when (value) {
         is SqlValue.Text -> value.value
@@ -61,6 +66,33 @@ internal fun List<SqlValue>.toBindArgs(): Array<Any?> = map { value ->
         is SqlValue.LongValue -> value.value
         is SqlValue.DoubleValue -> value.value
         is SqlValue.BlobValue -> value.value
+        SqlValue.Null -> null
+    }
+}.toTypedArray()
+
+/**
+ * Converts [SqlValue] into the `Array<String?>` that `rawQuery` requires.
+ *
+ * Android's query API only accepts string arguments - there is no typed-binding
+ * equivalent for SELECT. Numeric and boolean values are therefore rendered in
+ * their canonical decimal form and bound as text.
+ *
+ * This is safe because of SQLite's type affinity rules: when a TEXT value is
+ * compared against a column declared INTEGER, REAL or NUMERIC, SQLite converts
+ * the text operand to a number before comparing. Every numeric column in
+ * [DatabaseSchema] is declared INTEGER, so `occurred_at >= ?` with a text
+ * argument compares numerically rather than lexically.
+ *
+ * LIMIT clauses are *not* bound this way; they are interpolated as integers by
+ * the repositories, which validate them as positive before use.
+ */
+internal fun List<SqlValue>.toQueryArgs(): Array<String?> = map { value ->
+    when (value) {
+        is SqlValue.Text -> value.value
+        is SqlValue.IntValue -> value.value.toString()
+        is SqlValue.LongValue -> value.value.toString()
+        is SqlValue.DoubleValue -> value.value.toString()
+        is SqlValue.BlobValue -> null
         SqlValue.Null -> null
     }
 }.toTypedArray()

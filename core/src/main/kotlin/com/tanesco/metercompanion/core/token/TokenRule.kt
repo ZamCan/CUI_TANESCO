@@ -67,7 +67,7 @@ class CharacterSetTokenRule(
     override val label: String = "Uses only permitted characters"
 
     override fun check(normalized: String): TokenRuleVerdict {
-        val unexpected = normalized.filterNot { it in allowed }
+        val unexpected = normalized.filterNot { it in allowed }.toList()
         return if (unexpected.isEmpty()) {
             TokenRuleVerdict.pass()
         } else {
