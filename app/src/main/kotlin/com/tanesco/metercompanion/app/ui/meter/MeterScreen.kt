@@ -26,6 +26,7 @@ import com.tanesco.metercompanion.app.designsystem.component.SectionHeader
 import com.tanesco.metercompanion.app.designsystem.component.SectionLoadingBar
 import com.tanesco.metercompanion.app.designsystem.component.StatusExplainer
 import com.tanesco.metercompanion.app.designsystem.component.SurfacePanel
+import com.tanesco.metercompanion.app.designsystem.component.style
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
 import com.tanesco.metercompanion.app.ui.home.explanation
 import com.tanesco.metercompanion.app.ui.home.toDiagnosticStatus
@@ -120,11 +121,11 @@ private fun MeterIdentityCard(state: MeterUiState, onEditMeter: () -> Unit) {
             )
             LabeledValueRow(label = "Category", value = meter.category.label)
             LabeledValueRow(label = "Phase", value = meter.phase.label)
-            if (meter.region != null) {
-                LabeledValueRow(label = "Region", value = meter.region)
+            meter.region?.let { region ->
+                LabeledValueRow(label = "Region", value = region)
             }
-            if (meter.notes != null) {
-                LabeledValueRow(label = "Notes", value = meter.notes!!)
+            meter.notes?.let { notes ->
+                LabeledValueRow(label = "Notes", value = notes)
             }
         }
     }

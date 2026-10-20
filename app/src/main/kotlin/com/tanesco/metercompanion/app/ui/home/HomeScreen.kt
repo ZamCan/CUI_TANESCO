@@ -36,6 +36,7 @@ import com.tanesco.metercompanion.app.designsystem.component.SectionHeader
 import com.tanesco.metercompanion.app.designsystem.component.StatusExplainer
 import com.tanesco.metercompanion.app.designsystem.component.StatusPill
 import com.tanesco.metercompanion.app.designsystem.component.SurfacePanel
+import com.tanesco.metercompanion.app.designsystem.component.style
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
 import com.tanesco.metercompanion.connection.ConnectionState
 import com.tanesco.metercompanion.core.diagnostics.DiagnosticStatus
@@ -209,8 +210,8 @@ private fun ConfiguredMeterCard(state: HomeUiState, onOpenMeter: () -> Unit) {
                     monospaceValue = true,
                 )
                 LabeledValueRow(label = "Type", value = meter.subtitle)
-                if (meter.region != null) {
-                    LabeledValueRow(label = "Region", value = meter.region)
+                meter.region?.let { region ->
+                    LabeledValueRow(label = "Region", value = region)
                 }
             }
         }

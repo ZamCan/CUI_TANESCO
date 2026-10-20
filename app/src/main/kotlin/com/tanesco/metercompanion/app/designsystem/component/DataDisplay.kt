@@ -196,9 +196,9 @@ fun SelectableRow(
 @Composable
 fun NavigationRow(
     title: String,
-    subtitle: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     leading: @Composable (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
 ) {
@@ -246,16 +246,16 @@ fun StatusBadge(statusLabel: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * A grid of two columns for measurement tiles.
+ * A responsive grid of measurement tiles.
  *
- * On a 360dp phone a single column is more readable, so this deliberately shows
- * one column below 400dp and two above it rather than letting tiles become
- * unreadably narrow.
+ * Uses `GridCells.Adaptive` so tiles keep a readable minimum width: on a 360dp
+ * phone this yields a single column, on a tablet two or three, without a
+ * width breakpoint anywhere in the code.
  */
 @Composable
 fun MeasurementGrid(
     modifier: Modifier = Modifier,
-    content: @Composable androidx.compose.foundation.lazy.grid.LazyGridScope.() -> Unit,
+    content: androidx.compose.foundation.lazy.grid.LazyGridScope.() -> Unit,
 ) {
     androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
         columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(minSize = 160.dp),

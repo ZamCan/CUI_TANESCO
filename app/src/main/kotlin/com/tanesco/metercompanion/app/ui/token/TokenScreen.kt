@@ -2,12 +2,11 @@ package com.tanesco.metercompanion.app.ui.token
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
@@ -16,13 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import com.tanesco.metercompanion.app.designsystem.component.ActionRow
+import androidx.compose.ui.unit.dp
 import com.tanesco.metercompanion.app.designsystem.component.EmptyState
 import com.tanesco.metercompanion.app.designsystem.component.HairlineDivider
-import com.tanesco.metercompanion.app.designsystem.component.NoticePanel
 import com.tanesco.metercompanion.app.designsystem.component.NumericCodeField
-import com.tanesco.metercompanion.app.designsystem.component.PrimaryActionButton
+import com.tanesco.metercompanion.app.designsystem.component.NoticePanel
 import com.tanesco.metercompanion.app.designsystem.component.SectionHeader
 import com.tanesco.metercompanion.app.designsystem.component.StatusPill
 import com.tanesco.metercompanion.app.designsystem.component.SurfacePanel
@@ -37,19 +34,21 @@ import com.tanesco.metercompanion.core.model.TokenStatus
 /**
  * The Token Center.
  *
- * The most important thing this screen communicates is the *limit* of what it
- * does. It records tokens and runs structural checks on them. It cannot tell
- * the user a token is valid, because only a meter can do that and no meter is
- * reachable. That caveat is stated in the panel above the field rather than
- * hidden behind a help screen.
+ * Entry is presented as the meter's own front panel: the same keypad layout, the
+ * same indicator positions, the same CANCEL and ENTER keys. A keyboard entry
+ * field is offered underneath for users who prefer typing, and for assistive
+ * technology, writing into the same digit buffer.
  */
 @Composable
 fun TokenScreen(
     state: TokenUiState,
     submission: TokenSubmissionResult,
-    onInputChanged: (String) -> Unit,
+    onDigit: (Char) -> Unit,
+    onCancel: () -> Unit,
     onSubmit: () -> Unit,
-    onClearInput: () -> Unit,
+    onPageNext: () -> Unit,
+    onPagePrevious: () -> Unit,
+    onTypedValueChanged: (String) -> Unit,
     onMeterFilterChanged: (String?) -> Unit,
     onSubmissionConsumed: () -> Unit,
     contentPadding: PaddingValues,
@@ -67,23 +66,45 @@ fun TokenScreen(
             verticalArrangement = Arrangement.spacedBy(Spacing.lg),
         ) {
             item {
-                NoticePanel(
-                    title = "Local checks only",
-                    body = "Tokens entered here are stored on this device and checked for " +
-                        "formatting problems. Nothing is sent to a meter, and a token that " +
-                        "passes these checks has not been confirmed by a meter.",
-                )
+                SurfacePanel {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+                        MeterEntryExplanation()
+                        HairlineDivider()
+                        MeterTokenEntryPanel(
+                            keypad = state.keypad,
+                            failedCheckCount = state.failedCheckCount,
+                            accountLabel = state.selectedMeterId
+                                ?.let { selectedLabel(state.meters, it) }
+                                ?: "NO METER",
+                            onDigit = onDigit,
+                            onCancel = onCancel,
+                            onEnter = onSubmit,
+                            onPageNext = onPageNext,
+                            onPagePrevious = onPagePrevious,
+                            isSubmitting = state.isSubmitting,
+                        )
+                    }
+                }
             }
 
             item {
-                TokenEntryCard(
-                    state = state,
-                    submission = submission,
-                    onInputChanged = onInputChanged,
-                    onSubmit = onSubmit,
-                    onClearInput = onClearInput,
-                    onSubmissionConsumed = onSubmissionConsumed,
+                KeyboardAlternative(
+                    value = state.typedValue,
+                    enabled = !state.isSubmitting,
+                    failedCheckCount = state.failedCheckCount,
+                    isBlank = state.isBlank,
+                    onValueChange = onTypedValueChanged,
+                    onCancel = onCancel,
                 )
+            }
+
+            if (submission !is TokenSubmissionResult.Idle) {
+                item {
+                    SubmissionNotice(
+                        submission = submission,
+                        onDismiss = onSubmissionConsumed,
+                    )
+                }
             }
 
             if (state.meters.size > 1) {
@@ -113,7 +134,7 @@ fun TokenScreen(
                 item {
                     EmptyState(
                         title = "No tokens recorded",
-                        body = "Tokens you enter are kept here with the local check results " +
+                        body = "Tokens you enter are kept here with their local check results " +
                             "and a timestamp, so you can review what has been recorded.",
                     )
                 }
@@ -126,109 +147,100 @@ fun TokenScreen(
     }
 }
 
+private fun selectedLabel(meters: List<MeterProfile>, meterId: String): String =
+    meters.firstOrNull { it.id == meterId }?.accountNumber ?: meterId.takeLast(6)
+
+/**
+ * Keyboard entry.
+ *
+ * Kept as a full alternative rather than a convenience, because a keypad
+ * reproduced in software is still a set of 48dp touch targets: a user with a
+ * switch device, a stylus or motor tremor is better served by a real text field.
+ * Both paths write into the same buffer.
+ */
 @Composable
-private fun TokenEntryCard(
-    state: TokenUiState,
-    submission: TokenSubmissionResult,
-    onInputChanged: (String) -> Unit,
-    onSubmit: () -> Unit,
-    onClearInput: () -> Unit,
-    onSubmissionConsumed: () -> Unit,
+private fun KeyboardAlternative(
+    value: String,
+    enabled: Boolean,
+    isBlank: Boolean,
+    failedCheckCount: Int,
+    onValueChange: (String) -> Unit,
+    onCancel: () -> Unit,
 ) {
     SurfacePanel {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            SectionHeader(title = "Enter a token")
-
+            SectionHeader(title = "Enter with a keyboard instead")
             NumericCodeField(
-                value = state.input,
-                onValueChange = onInputChanged,
+                value = value,
+                onValueChange = onValueChange,
                 label = "Token",
                 placeholder = "20 digits",
-                supportingText = when {
-                    state.isBlank -> "Separate the digits with spaces if that is easier to read."
-                    state.failedCheckCount > 0 ->
-                        "Does not match the expected format. Check the digits and try again."
-
-                    else -> "Formatted as: ${state.displayPreview}"
+                enabled = enabled,
+                supportingText = if (isBlank) {
+                    "Spaces and dashes are accepted and removed."
+                } else {
+                    "${value.length} digits entered"
                 },
-                errorMessage = if (state.failedCheckCount > 0 && !state.isBlank) {
+                errorMessage = if (failedCheckCount > 0 && !isBlank) {
                     "Does not match the expected format."
                 } else {
                     null
                 },
             )
-
-            when (submission) {
-                is TokenSubmissionResult.Stored -> {
-                    StoredTokenNotice(record = submission.record, onDismiss = onSubmissionConsumed)
-                }
-
-                is TokenSubmissionResult.Rejected -> {
-                    NoticePanel(
-                        title = "Not recorded",
-                        body = submission.message,
-                        status = DiagnosticStatus.Error,
-                        action = {
-                            TertiaryActionButton(text = "Dismiss", onClick = onSubmissionConsumed)
-                        },
-                    )
-                }
-
-                TokenSubmissionResult.Idle -> Unit
-            }
-
-            ActionRow {
-                PrimaryActionButton(
-                    text = "Record token",
-                    onClick = onSubmit,
-                    enabled = !state.isBlank && !state.isSubmitting,
-                    loading = state.isSubmitting,
-                    modifier = Modifier.weight(1f),
-                )
-                TertiaryActionButton(
-                    text = "Clear",
-                    onClick = onClearInput,
-                    enabled = state.input.isNotEmpty() && !state.isSubmitting,
-                )
-            }
+            TertiaryActionButton(text = "Clear entry", onClick = onCancel, enabled = !isBlank)
         }
     }
 }
 
 /**
- * Confirmation after a token is stored.
+ * Result of pressing ENTER.
  *
- * Copy states exactly what happened - it was recorded locally and what the local
- * checks said. It never says the token was accepted, sent or applied.
+ * Copy states exactly what happened. It never says a token was accepted, sent or
+ * applied, because no adapter can report that.
  */
 @Composable
-private fun StoredTokenNotice(record: TokenRecord, onDismiss: () -> Unit) {
-    NoticePanel(
-        title = "Recorded locally",
-        body = when (record.status) {
-            TokenStatus.StructurallyValid ->
-                "Stored on this device and passed the local format checks. " +
-                    "It has not been sent to a meter."
+private fun SubmissionNotice(
+    submission: TokenSubmissionResult,
+    onDismiss: () -> Unit,
+) {
+    when (submission) {
+        is TokenSubmissionResult.Stored -> NoticePanel(
+            title = "Recorded locally",
+            body = when (submission.record.status) {
+                TokenStatus.StructurallyValid ->
+                    "Saved on this device and passed the local format checks. " +
+                        "It has not been sent to a meter."
 
-            TokenStatus.Rejected ->
-                "Stored on this device, but it failed the local format checks: " +
-                    record.validation?.failedChecks?.joinToString(" ") { it.message }.orEmpty()
+                TokenStatus.Rejected ->
+                    "Saved on this device, but it failed the local format checks: " +
+                        submission.record.validation?.failedChecks
+                            ?.joinToString(" ") { it.message }.orEmpty()
 
-            TokenStatus.Duplicate ->
-                "Stored on this device. It matches a token recorded earlier, which is often " +
-                    "a sign it was entered twice."
+                TokenStatus.Duplicate ->
+                    "Saved on this device. It matches a token recorded earlier, which is " +
+                        "often a sign it was entered twice."
 
-            TokenStatus.Recorded ->
-                "Stored on this device. No local checks have been run yet."
-        },
-        status = when (record.status) {
-            TokenStatus.StructurallyValid -> DiagnosticStatus.Ready
-            TokenStatus.Rejected -> DiagnosticStatus.Error
-            TokenStatus.Duplicate -> DiagnosticStatus.Research
-            TokenStatus.Recorded -> DiagnosticStatus.Available
-        },
-        action = { TertiaryActionButton(text = "Dismiss", onClick = onDismiss) },
-    )
+                TokenStatus.Recorded ->
+                    "Saved on this device. No local checks have been run yet."
+            },
+            status = when (submission.record.status) {
+                TokenStatus.StructurallyValid -> DiagnosticStatus.Ready
+                TokenStatus.Rejected -> DiagnosticStatus.Error
+                TokenStatus.Duplicate -> DiagnosticStatus.Research
+                TokenStatus.Recorded -> DiagnosticStatus.Available
+            },
+            action = { TertiaryActionButton(text = "Dismiss", onClick = onDismiss) },
+        )
+
+        is TokenSubmissionResult.Rejected -> NoticePanel(
+            title = "Not recorded",
+            body = submission.message,
+            status = DiagnosticStatus.Error,
+            action = { TertiaryActionButton(text = "Dismiss", onClick = onDismiss) },
+        )
+
+        TokenSubmissionResult.Idle -> Unit
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -288,13 +300,11 @@ private fun TokenHistoryRow(record: TokenRecord) {
                 text = "Hand-off: ${record.transferState.label}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Start,
             )
 
             record.validation?.let { report ->
                 Text(
-                    text = "${report.checks.size} local check(s), " +
-                        "${report.failedChecks.size} failed",
+                    text = "${report.checks.size} local check(s), ${report.failedChecks.size} failed",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -310,3 +320,6 @@ internal fun TokenStatus.toDiagnosticStatus(): DiagnosticStatus = when (this) {
     TokenStatus.Duplicate -> DiagnosticStatus.Research
     TokenStatus.Recorded -> DiagnosticStatus.Available
 }
+
+/** Kept so the screen's minimum width expectation is explicit for previews. */
+internal val MinimumSupportedWidth = 320.dp

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Everything the application stores is local by design, so it is all eligible for
+  backup: a user's meter profiles, token history and activity log are the value
+  of the product. There are no credentials or keys in this database, and the
+  application has no mechanism to store any.
+-->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="sharedpref" path="." />
+</full-backup-content>

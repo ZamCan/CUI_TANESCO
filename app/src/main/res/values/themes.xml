@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      A minimal platform theme. All real theming happens in Compose
+      (TanescoTheme); this exists only so the window has sane defaults before the
+      first frame, and so the system bars do not flash a default colour.
+
+      android:windowLightStatusBar is not set here: the bar icon colour follows
+      the in-app theme, which the activity updates via enableEdgeToEdge().
+    -->
+    <style name="Theme.TanescoMeterCompanion" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>

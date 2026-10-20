@@ -196,10 +196,3 @@ private fun CheckRow(
         }
     }
 }
-
-/** Filter chips are unused on this screen; kept out of the public surface. */
-@Suppress("unused")
-private val unusedFilterApi = FlowRow::class
-
-@Suppress("unused")
-private val unusedPadding = PaddingValues(0.dp)

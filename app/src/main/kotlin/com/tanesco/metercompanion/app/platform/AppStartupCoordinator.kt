@@ -5,7 +5,7 @@ import com.tanesco.metercompanion.core.history.EventRecorder
 import com.tanesco.metercompanion.core.model.EventCategory
 import com.tanesco.metercompanion.core.model.EventNames
 import com.tanesco.metercompanion.core.model.EventSeverity
-import kotlinx.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CancellationException
 
 /**
  * One-time work performed when the application starts.

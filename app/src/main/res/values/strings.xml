@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TANESCO Meter</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_meter">Meter</string>
+    <string name="nav_tokens">Tokens</string>
+    <string name="nav_activity">Activity</string>
+
+    <!-- Screen titles -->
+    <string name="title_home">Overview</string>
+    <string name="title_meter">Meter</string>
+    <string name="title_tokens">Token Center</string>
+    <string name="title_activity">Activity</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_diagnostics">Diagnostics</string>
+    <string name="title_about">About</string>
+
+    <!-- Shared actions -->
+    <string name="action_back">Go back</string>
+    <string name="action_add_meter">Add a meter</string>
+
+    <!--
+      Kept out of the Kotlin source so the accessibility layer has a single
+      place to localise. See docs/decisions/0007-localisation.md for why only
+      reviewed locales are shipped.
+    -->
+    <string name="meter_panel_caption">Keypad modelled on your meter</string>
+    <string name="meter_panel_is_not_a_connection">This panel is a keypad, not a connection</string>
+    <string name="token_entry_not_sent">Nothing entered here is sent to a meter.</string>
+</resources>

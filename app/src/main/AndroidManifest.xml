@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      No permissions are declared.
+
+      This is intentional and load-bearing, not an oversight. The application is
+      offline-first: every current feature works against a local database, and
+      nothing talks to a network or to a meter. Adding INTERNET, BLUETOOTH or
+      NFC now would imply capabilities that are not implemented.
+
+      When a genuine connection adapter is added, its permissions will be added
+      at that point together with the feature that needs them.
+    -->
+
+    <application
+        android:name=".MeterCompanionApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TanescoMeterCompanion">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.TanescoMeterCompanion"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

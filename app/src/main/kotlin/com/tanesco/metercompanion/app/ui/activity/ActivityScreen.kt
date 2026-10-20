@@ -151,9 +151,9 @@ private fun EventRow(event: AppEvent) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
-            if (event.detail != null) {
+            event.detail?.let { detail ->
                 Text(
-                    text = event.detail,
+                    text = detail,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -16,72 +16,70 @@ import androidx.compose.ui.unit.sp
  *
  * Two deliberate choices:
  *
- *  - Tighter letter spacing on large text. Display sizes with default tracking
- *    read as marketing; this application reads as instrumentation.
- *  - A monospace style for identifiers (account numbers, tokens, codes).
- *    Meter and token numbers are transcribed by hand from a physical label;
- *    monospace makes digit-by-digit comparison possible and materially reduces
+ *  - Tighter letter spacing on the large sizes. Default tracking at display sizes
+ *    reads as marketing; this application reads as instrumentation.
+ *  - A monospace style for identifiers (account numbers, tokens, codes). Meter
+ *    and token numbers are transcribed by hand from a physical label; monospace
+ *    makes digit-by-digit comparison possible and materially reduces
  *    transcription errors.
+ *
+ * Material 3's `Typography` exposes its styles as read-only properties, so the
+ * scale is declared as a single constructor call rather than by reassignment.
  */
-internal val TanescoTypography: Typography = with(Typography()) {
-
-    // Display and headline: used only for screen titles and the largest figures.
+internal val TanescoTypography: Typography = Typography(
+    // Display: used only for the largest figures.
     displaySmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 30.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.4).sp,
-    )
+    ),
 
+    // Headline: screen titles.
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 26.sp,
         lineHeight = 32.sp,
         letterSpacing = (-0.3).sp,
-    )
-
+    ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = (-0.2).sp,
-    )
-
+    ),
     headlineSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 19.sp,
         lineHeight = 25.sp,
         letterSpacing = (-0.1).sp,
-    )
+    ),
 
-    // Title: card and panel headings.
+    // Title: panel and card headings.
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 17.sp,
         lineHeight = 23.sp,
-        letterSpacing = 0.sp,
-    )
-
+    ),
     titleMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 15.sp,
         lineHeight = 21.sp,
         letterSpacing = 0.1.sp,
-    )
-
+    ),
     titleSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 13.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.1.sp,
-    )
+    ),
 
     // Body.
     bodyLarge = TextStyle(
@@ -90,23 +88,21 @@ internal val TanescoTypography: Typography = with(Typography()) {
         fontSize = 15.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.15.sp,
-    )
-
+    ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 13.5.sp,
         lineHeight = 19.sp,
         letterSpacing = 0.15.sp,
-    )
-
+    ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 17.sp,
         letterSpacing = 0.2.sp,
-    )
+    ),
 
     // Labels: buttons, chips, captions above fields.
     labelLarge = TextStyle(
@@ -115,30 +111,26 @@ internal val TanescoTypography: Typography = with(Typography()) {
         fontSize = 14.sp,
         lineHeight = 19.sp,
         letterSpacing = 0.1.sp,
-    )
-
+    ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp,
-    )
-
+    ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 15.sp,
         letterSpacing = 0.5.sp,
-    )
-}
+    ),
+)
 
 /**
  * Style for values that are transcribed by hand: account numbers, tokens,
  * adapter identifiers and error codes.
- *
- * Monospace with generous tracking so that groups of digits stay aligned.
  */
 val IdentifierTextStyle: TextStyle = TextStyle(
     fontFamily = FontFamily.Monospace,

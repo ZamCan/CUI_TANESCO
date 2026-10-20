@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tanesco.metercompanion.core.history.EventRecorder
 import com.tanesco.metercompanion.core.model.AppSettings
 import com.tanesco.metercompanion.core.model.AppearanceMode
+import com.tanesco.metercompanion.core.model.DomainResult
 import com.tanesco.metercompanion.core.model.EventCategory
 import com.tanesco.metercompanion.core.model.EventNames
 import com.tanesco.metercompanion.core.model.MeterProfile
@@ -126,20 +127,23 @@ class SettingsViewModel(
         viewModelScope.launch {
             val updated = transform(settingsRepository.get())
             val result = settingsRepository.set(updated)
-            _notice.value = result.fold(
-                onSuccess = {
-                    eventRecorder.info(
-                        category = EventCategory.Settings,
-                        name = EventNames.SETTINGS_CHANGED,
-                        summary = summary,
-                        userInitiated = true,
-                    )
-                    SettingsNotice.Saved(summary)
-                },
-                onFailure = { error ->
-                    SettingsNotice.Failed("Could not save that change. ${error.technicalDetail}")
-                },
-            )
+
+            // `fold` takes a non-suspending lambda, so the suspend call that
+            // records the event is made here rather than inside the branch.
+            if (result is DomainResult.Success) {
+                eventRecorder.info(
+                    category = EventCategory.Settings,
+                    name = EventNames.SETTINGS_CHANGED,
+                    summary = summary,
+                    userInitiated = true,
+                )
+                _notice.value = SettingsNotice.Saved(summary)
+            } else {
+                _notice.value = SettingsNotice.Failed(
+                    "Could not save that change. " +
+                        (result.errorOrNull()?.technicalDetail ?: "unknown error"),
+                )
+            }
         }
     }
 }

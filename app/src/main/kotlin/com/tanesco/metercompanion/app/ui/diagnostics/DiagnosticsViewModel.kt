@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tanesco.metercompanion.core.diagnostics.DiagnosticsReport
 import com.tanesco.metercompanion.core.diagnostics.DiagnosticsService
 import com.tanesco.metercompanion.app.ui.common.UiState
+import com.tanesco.metercompanion.app.ui.common.dataOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
