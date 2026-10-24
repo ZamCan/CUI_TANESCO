@@ -1,26 +1,46 @@
 # TANESCO Digital CIU
 
-A native Android companion interface for studying and managing prepaid electricity meter interactions. The application is being developed in clearly separated layers so that the user interface can be built and tested before any physical meter protocol is validated.
+A phone-first native Android companion interface for prepaid electricity meter workflows. The interface is intentionally separated from the hardware layer so the app can be developed and tested without falsely claiming a connection to a physical meter.
 
-## Current engineering status
+## Repository status
 
-- Repository baseline: initialized.
-- Meter dashboard and interaction simulator: planned for the first implementation stage.
-- Physical CIU/meter communications: **not implemented or verified**. Do not treat simulated readings, pairing, or token operations as real meter communication.
-- Official TANESCO branding and meter-specific compatibility must be based on verified assets and device documentation; this project does not imply TANESCO endorsement.
+- Native Android Gradle project: initialized.
+- Initial dashboard: implemented in Kotlin using Android native views.
+- Visual direction: warm parchment, walnut, and restrained amber accents.
+- GitHub Actions debug-APK workflow: configured for pushes, pull requests, and manual runs.
+- **Live CIU/meter communication: not implemented or verified.** The current screen is a baseline, not a working meter controller.
 
-## Development principles
+## Safety and accuracy
 
-1. Native Android UI, designed for phone-first development.
-2. Keep presentation, meter-domain logic, and hardware/protocol adapters separate.
-3. Make simulator mode visibly distinct from a real connected meter.
-4. Never claim a token was sent, accepted, or a meter was paired unless the connected hardware reports a verified result.
-5. Require authorized equipment and documented protocol details before implementing live communications.
+- Simulator/interface state must remain clearly distinct from live hardware state.
+- Never report a meter paired, a balance read, or a token sent/accepted without a verified response from authorized compatible hardware.
+- Do not include guessed radio frequencies, pairing sequences, keys, or undocumented commands as if they were verified protocol facts.
+- Use official TANESCO marks and meter images only after confirming source and permitted use. This project does not imply TANESCO endorsement.
 
-## Build
+## Build locally
 
-This repository is being initialized. The Android Gradle project and build validation workflow will be added in subsequent commits. Build status must be reported only after a real build has run.
+Requirements: JDK 17, Android SDK Platform 35, Android Build Tools, and Gradle 8.7.
 
-## Project name
+From the repository root, run:
 
-TANESCO Digital CIU (repository: `CUI_TANESCO`).
+```sh
+gradle --no-daemon assembleDebug
+```
+
+Expected debug APK path after a successful build:
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+A successful source commit is not proof that the app compiles. Check the GitHub Actions run and its artifact before treating the APK as build-verified.
+
+## Next engineering stages
+
+1. Build and validate this baseline on Android/CI.
+2. Improve dashboard, meter profile, history, and token-entry UX with explicit simulator labeling.
+3. Add unit tests for meter-domain models and input validation.
+4. Research compatible CIU/meter hardware and documented authorized protocols separately.
+5. Implement a hardware adapter only after protocol and hardware behaviour are demonstrated and tested.
+
+Project name: **TANESCO Digital CIU** (`CUI_TANESCO`).
