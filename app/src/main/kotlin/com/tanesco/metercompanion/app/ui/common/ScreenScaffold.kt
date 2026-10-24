@@ -78,7 +78,7 @@ fun ScreenScaffold(
                                 }
                                 Column {
                                     Text(
-                                        text = if (onNavigateBack == null) "⚡ TANESCO" else "⚡ TANESCO · METER",
+                                        text = if (onNavigateBack == null) "TANESCO" else "TANESCO · METER COMPANION",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = TanescoTheme.glass.brandHighlight,
                                     )

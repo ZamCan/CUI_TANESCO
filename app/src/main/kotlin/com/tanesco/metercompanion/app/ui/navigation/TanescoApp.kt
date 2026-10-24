@@ -9,9 +9,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -70,12 +78,11 @@ import com.tanesco.metercompanion.app.ui.token.TokenViewModel
  * screens that need them, which keeps the frequent destinations one tap away
  * without cramping the bar.
  */
-private enum class Tab(val destination: Destination, val label: String, val glyph: String) {
-    // Unicode glyphs, deliberately: ⌂ home, ⚡ meter/energy, ▦ token keypad, ◷ activity/time.
-    Home(Destination.Home, "Home", "⌂"),
-    Meter(Destination.Meter, "Meter", "⚡"),
-    Tokens(Destination.Tokens, "Tokens", "▦"),
-    Activity(Destination.Activity, "Activity", "◷"),
+private enum class Tab(val destination: Destination, val label: String, val icon: ImageVector) {
+    Home(Destination.Home, "Home", Icons.Filled.Home),
+    Meter(Destination.Meter, "Meter", Icons.Filled.Bolt),
+    Tokens(Destination.Tokens, "Tokens", Icons.Filled.Dialpad),
+    Activity(Destination.Activity, "Activity", Icons.Filled.History),
 }
 
 /**
@@ -155,11 +162,11 @@ fun TanescoApp(container: AppContainer) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(1.dp),
                             ) {
-                                Text(
-                                    tab.glyph,
-                                    color = tint,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Black,
+                                Icon(
+                                    imageVector = tab.icon,
+                                    contentDescription = null,
+                                    tint = tint,
+                                    modifier = Modifier.size(22.dp),
                                 )
                                 Text(
                                     tab.label,

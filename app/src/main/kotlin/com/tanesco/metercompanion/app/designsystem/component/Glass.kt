@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,11 +21,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.tanesco.metercompanion.app.R
 import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 
@@ -104,30 +103,31 @@ fun Modifier.glassSurface(
     .border(1.dp, glassBorder(accent), shape)
 
 /**
- * A Unicode glyph in a tinted glass medallion — the app's lightweight icon
- * vocabulary (⌂ ⚡ ▦ ◷ ⚙ ✚ i). Real text glyphs: no icon font, no drawable,
- * they scale with accessibility font size and inherit the semantic tint.
+ * A Material vector icon in a tinted glass medallion — the app's consistent
+ * leading-icon treatment for navigation and shortcut rows. Vector icons only:
+ * no emoji, no text glyphs, one optical size inside every medallion.
  */
 @Composable
-fun UnicodeBadge(
-    glyph: String,
+fun IconBadge(
+    icon: ImageVector,
     tint: Color,
     modifier: Modifier = Modifier,
     size: Dp = 42.dp,
+    contentDescription: String? = null,
 ) {
     Box(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(Brush.linearGradient(listOf(tint.copy(alpha = 0.30f), tint.copy(alpha = 0.08f))))
-            .border(1.dp, tint.copy(alpha = 0.55f), CircleShape),
+            .background(Brush.linearGradient(listOf(tint.copy(alpha = 0.22f), tint.copy(alpha = 0.07f))))
+            .border(1.dp, tint.copy(alpha = 0.42f), CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = glyph,
-            color = tint,
-            fontSize = (size.value * 0.42f).sp,
-            fontWeight = FontWeight.Black,
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(size * 0.52f),
         )
     }
 }

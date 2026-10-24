@@ -12,15 +12,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.tanesco.metercompanion.app.designsystem.component.AccentPanel
 import com.tanesco.metercompanion.app.designsystem.component.BrandMark
-import com.tanesco.metercompanion.app.designsystem.component.UnicodeBadge
+import com.tanesco.metercompanion.app.designsystem.component.IconBadge
 import com.tanesco.metercompanion.app.designsystem.component.EmptyState
 import com.tanesco.metercompanion.app.designsystem.component.HairlineDivider
 import com.tanesco.metercompanion.app.designsystem.component.LabeledValueRow
@@ -127,7 +137,7 @@ private fun ApplicationStatusCard(isLoading: Boolean, hasMeter: Boolean, tokenCo
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = "⚡ Local-first · every feature works offline",
+                        text = "Local-first · every feature works offline",
                         style = MaterialTheme.typography.bodySmall,
                         color = TanescoTheme.glass.brandHighlight,
                     )
@@ -266,21 +276,21 @@ private fun ShortcutsCard(
         SurfacePanel(contentPadding = PaddingValues(Spacing.sm)) {
             Column {
                 ShortcutRow(
-                    glyph = "⚡",
+                    icon = Icons.Filled.Bolt,
                     title = "Meter",
                     subtitle = "Identity, readings and connection state",
                     onClick = onOpenMeter,
                 )
                 HairlineDivider()
                 ShortcutRow(
-                    glyph = "▦",
+                    icon = Icons.Filled.Dialpad,
                     title = "Token Center",
                     subtitle = "Enter and review tokens",
                     onClick = onOpenTokens,
                 )
                 HairlineDivider()
                 ShortcutRow(
-                    glyph = "◷",
+                    icon = Icons.Filled.History,
                     title = "Activity",
                     subtitle = "Everything this application has recorded",
                     onClick = onOpenActivity,
@@ -292,7 +302,7 @@ private fun ShortcutsCard(
 
 @Composable
 private fun ShortcutRow(
-    glyph: String,
+    icon: ImageVector,
     title: String,
     subtitle: String,
     onClick: () -> Unit,
@@ -302,8 +312,8 @@ private fun ShortcutRow(
         subtitle = subtitle,
         onClick = onClick,
         leading = {
-            UnicodeBadge(
-                glyph = glyph,
+            IconBadge(
+                icon = icon,
                 tint = MaterialTheme.colorScheme.primary,
                 size = 40.dp,
             )
@@ -314,10 +324,10 @@ private fun ShortcutRow(
 
 @Composable
 private fun RowChevron() {
-    Text(
-        text = "›",
-        style = MaterialTheme.typography.headlineSmall,
-        color = TanescoTheme.glass.brandHighlight,
+    Icon(
+        imageVector = Icons.Filled.KeyboardArrowRight,
+        contentDescription = null,
+        tint = TanescoTheme.glass.brandHighlight,
     )
 }
 
@@ -408,7 +418,7 @@ private fun MoreCard(
                     title = "Settings",
                     subtitle = "Meters, appearance, units and local data",
                     onClick = onOpenSettings,
-                    leading = { UnicodeBadge("⚙", MaterialTheme.colorScheme.primary, size = 40.dp) },
+                    leading = { IconBadge(Icons.Filled.Settings, MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
                 HairlineDivider()
@@ -416,7 +426,7 @@ private fun MoreCard(
                     title = "Diagnostics",
                     subtitle = "Subsystem health and connection support",
                     onClick = onOpenDiagnostics,
-                    leading = { UnicodeBadge("✚", MaterialTheme.colorScheme.primary, size = 40.dp) },
+                    leading = { IconBadge(Icons.Filled.Build, MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
                 HairlineDivider()
@@ -424,7 +434,7 @@ private fun MoreCard(
                     title = "About",
                     subtitle = "Version and technical information",
                     onClick = onOpenAbout,
-                    leading = { UnicodeBadge("i", MaterialTheme.colorScheme.primary, size = 40.dp) },
+                    leading = { IconBadge(Icons.Filled.Info, MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
             }
