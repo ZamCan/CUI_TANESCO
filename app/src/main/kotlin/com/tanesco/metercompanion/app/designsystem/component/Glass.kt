@@ -132,14 +132,21 @@ fun UnicodeBadge(
     }
 }
 
-/** The premium PNG brand mark (derived from the real TANESCO logo) in a glass tile. */
+/**
+ * The authentic TANESCO logo (PNG, unaltered artwork) on its proper light
+ * ground. The official mark's green wordmark is designed for light surfaces,
+ * so the tile is ivory in both themes — brand correct, and legible on glass.
+ */
 @Composable
 fun BrandMark(modifier: Modifier = Modifier, size: Dp = 46.dp) {
     Box(
         modifier = modifier
             .size(size)
-            .glassSurface(RoundedCornerShape(size * 0.30f), elevation = 6.dp)
-            .padding(size * 0.07f),
+            .shadow(6.dp, RoundedCornerShape(size * 0.30f), spotColor = Color.Black.copy(alpha = 0.25f))
+            .clip(RoundedCornerShape(size * 0.30f))
+            .background(Color(0xFFF7FAF1))
+            .border(1.dp, Color(0xFF177A2E).copy(alpha = 0.28f), RoundedCornerShape(size * 0.30f))
+            .padding(size * 0.08f),
         contentAlignment = Alignment.Center,
     ) {
         Image(

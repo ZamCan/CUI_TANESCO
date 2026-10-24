@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.tanesco.metercompanion.app.R
@@ -54,13 +56,16 @@ fun AboutScreen(
     ) {
         SurfacePanel {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                // Authentic TANESCO logo, unaltered, on its proper light ground.
                 Image(
-                    painter = painterResource(
-                        if (TanescoTheme.glass.isDark) R.drawable.brand_lockup else R.drawable.brand_lockup_light,
-                    ),
-                    contentDescription = "TANESCO Meter Companion logo",
+                    painter = painterResource(R.drawable.brand_logo),
+                    contentDescription = "TANESCO logo",
                     modifier = Modifier
-                        .size(150.dp)
+                        .fillMaxWidth()
+                        .height(132.dp)
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(18.dp))
+                        .background(androidx.compose.ui.graphics.Color(0xFFF7FAF1))
+                        .padding(horizontal = 22.dp, vertical = 14.dp)
                         .align(Alignment.CenterHorizontally),
                 )
                 SectionHeader(title = "Application")

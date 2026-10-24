@@ -3,5 +3,5 @@
     <!-- Pre-Compose window + adaptive-icon backdrop: deep TANESCO-green ink,
          matching the premium glass theme so there is no light flash on launch. -->
     <color name="window_background">#04150B</color>
-    <color name="ic_launcher_background">#052013</color>
+    <color name="ic_launcher_background">#F2F7EA</color>
 </resources>
