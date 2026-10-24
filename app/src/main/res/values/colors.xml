@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matches TanescoPalette.LightBackground; used only for the pre-Compose window. -->
-    <color name="window_background">#FAF8F5</color>
-    <color name="ic_launcher_background">#14120F</color>
+    <!-- Pre-Compose window + adaptive-icon backdrop: deep TANESCO-green ink,
+         matching the premium glass theme so there is no light flash on launch. -->
+    <color name="window_background">#04150B</color>
+    <color name="ic_launcher_background">#052013</color>
 </resources>

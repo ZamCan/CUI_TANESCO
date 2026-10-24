@@ -22,6 +22,16 @@ deliberately unimplemented. See
 | Tests | Re-run by GitHub Actions after the APK assembly stage; confirm the latest workflow result before relying on the count. |
 | Git | clean tree; milestones committed individually |
 
+### Interface — TANESCO Glass
+
+A premium glassmorphic design system built from the real TANESCO identity
+(deep green + sun-yellow, from the logo): translucent glass panels over an
+aurora wash, a floating glass top bar and bottom navigation, Unicode glyph
+medallions for navigation/shortcuts, and a PNG-only logo set derived from the
+official mark. It is implemented once in the design-system layer
+(`Glass.kt`, `Panel.kt`, shells) so every screen inherits it. See
+[docs/ui/PREMIUM-GLASS-DESIGN.md](docs/ui/PREMIUM-GLASS-DESIGN.md).
+
 ### What the application does today
 
 - **Home** — application status, configured meter, connection state with its

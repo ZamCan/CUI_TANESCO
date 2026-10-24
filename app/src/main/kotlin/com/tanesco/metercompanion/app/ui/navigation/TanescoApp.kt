@@ -1,21 +1,35 @@
 package com.tanesco.metercompanion.app.ui.navigation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -27,6 +41,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tanesco.metercompanion.app.AppContainer
+import com.tanesco.metercompanion.app.designsystem.component.glassSurface
+import com.tanesco.metercompanion.app.designsystem.theme.Spacing
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 import com.tanesco.metercompanion.app.ui.about.AboutScreen
 import com.tanesco.metercompanion.app.ui.activity.ActivityScreen
 import com.tanesco.metercompanion.app.ui.activity.ActivityViewModel
@@ -53,11 +70,12 @@ import com.tanesco.metercompanion.app.ui.token.TokenViewModel
  * screens that need them, which keeps the frequent destinations one tap away
  * without cramping the bar.
  */
-private enum class Tab(val destination: Destination, val label: String, val icon: ImageVector) {
-    Home(Destination.Home, "Home", Icons.Filled.Home),
-    Meter(Destination.Meter, "Meter", Icons.Filled.Settings),
-    Tokens(Destination.Tokens, "Tokens", Icons.Filled.Lock),
-    Activity(Destination.Activity, "Activity", Icons.Filled.List),
+private enum class Tab(val destination: Destination, val label: String, val glyph: String) {
+    // Unicode glyphs, deliberately: ⌂ home, ⚡ meter/energy, ▦ token keypad, ◷ activity/time.
+    Home(Destination.Home, "Home", "⌂"),
+    Meter(Destination.Meter, "Meter", "⚡"),
+    Tokens(Destination.Tokens, "Tokens", "▦"),
+    Activity(Destination.Activity, "Activity", "◷"),
 }
 
 /**
@@ -78,24 +96,80 @@ fun TanescoApp(container: AppContainer) {
     }
 
     androidx.compose.material3.Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
-                    Tab.entries.forEach { tab ->
-                        val selected = currentRoute?.hierarchy
-                            ?.any { it.route == tab.destination.route } == true
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { navController.navigateToTab(tab.destination) },
-                            icon = {
-                                Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = null,
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .glassSurface(RoundedCornerShape(28.dp), elevation = 16.dp)
+                            .padding(horizontal = Spacing.sm, vertical = Spacing.sm),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Tab.entries.forEach { tab ->
+                            val selected = currentRoute?.hierarchy
+                                ?.any { it.route == tab.destination.route } == true
+                            val pill by animateColorAsState(
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+                                } else {
+                                    Color.Transparent
+                                },
+                                tween(260), label = "tabPill",
+                            )
+                            val tint by animateColorAsState(
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                tween(260), label = "tabTint",
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(21.dp))
+                                    .background(pill)
+                                    .border(
+                                        1.dp,
+                                        if (selected) {
+                                            TanescoTheme.glass.brandHighlight.copy(alpha = 0.65f)
+                                        } else {
+                                            Color.Transparent
+                                        },
+                                        RoundedCornerShape(21.dp),
+                                    )
+                                    .clickable { navController.navigateToTab(tab.destination) }
+                                    .semantics {
+                                        contentDescription = tab.label
+                                        role = Role.Tab
+                                        this.selected = selected
+                                    }
+                                    .padding(vertical = 7.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(1.dp),
+                            ) {
+                                Text(
+                                    tab.glyph,
+                                    color = tint,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
                                 )
-                            },
-                            label = { Text(tab.label) },
-                            alwaysShowLabel = false,
-                        )
+                                Text(
+                                    tab.label,
+                                    color = tint,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
                     }
                 }
             }

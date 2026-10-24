@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -32,19 +33,17 @@ import com.tanesco.metercompanion.app.designsystem.theme.ComponentSize
 import com.tanesco.metercompanion.app.designsystem.theme.IdentifierTextStyle
 import com.tanesco.metercompanion.app.designsystem.theme.Radii
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 
 /**
- * The application's one container primitive.
+ * The application's one container primitive — now a glass pane.
  *
- * Panels are separated by a hairline outline and a barely-there tonal
- * difference rather than by shadow. Shadows read as "floating card" and quickly
- * turn a screen into a web dashboard; a hairline reads as a panel of an
- * instrument and stays quiet at any elevation.
- *
- * Deliberately not built on [androidx.compose.material3.Card]: Card brings a
- * container colour and elevation model this design does not use, and having a
- * single primitive prevents the drift that appears when several near-identical
- * containers accumulate.
+ * Every screen builds its blocks from [SurfacePanel], which is why upgrading
+ * this single primitive upgrades the whole application: translucent gradient
+ * fill over the aurora background, a light-catching gradient hairline and a
+ * soft green-tinted shadow. It reads as a pane of an instrument, not a web
+ * card, because separation comes from light and tone rather than drop-shadow
+ * theatre. Public API is unchanged so no screen needed to change.
  */
 @Composable
 fun SurfacePanel(
@@ -55,19 +54,18 @@ fun SurfacePanel(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(Radii.md))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .glassSurface(RoundedCornerShape(Radii.md))
             .padding(contentPadding),
         content = content,
     )
 }
 
 /**
- * A panel preceded by a vertical rule in a semantic colour.
+ * A glass panel preceded by a gradient rule in a semantic colour.
  *
- * Used to attach meaning to a block - a connection state, a warning - without
- * tinting the whole surface. Colour carries the status; the body stays neutral
- * and readable.
+ * The rule carries the status; the glass body stays neutral and readable.
+ * The rule is now a light-to-deep gradient of the accent so it feels lit
+ * from the same source as the panel's top edge.
  */
 @Composable
 fun AccentPanel(
@@ -79,15 +77,19 @@ fun AccentPanel(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            // Intrinsic height lets the rule match the panel's height exactly,
-            // without either side having to know the other's size.
             .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
         Box(
             Modifier
-                .width(ComponentSize.accentRuleWidth)
+                .width(ComponentSize.accentRuleWidth + 1.dp)
                 .fillMaxHeight()
-                .background(accentColor),
+                .clip(RoundedCornerShape(Radii.pill))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(accentColor, accentColor.copy(alpha = 0.35f)),
+                    ),
+                ),
         )
         SurfacePanel(
             modifier = Modifier.weight(1f),
@@ -98,10 +100,11 @@ fun AccentPanel(
 }
 
 /**
- * Section heading used above groups of content within a screen.
+ * Section heading above groups of content.
  *
- * Uppercase with wide tracking appears only here, at small sizes, because this is
- * the one place a screen needs to signal "a new category begins".
+ * A short brand-gradient tick + tracked uppercase label. The tick uses the
+ * TANESCO green -> sun-yellow relationship; it is identity, not status, which
+ * is why it may use the brand highlight that status components may not.
  */
 @Composable
 fun SectionHeader(
@@ -116,6 +119,21 @@ fun SectionHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {
+        Box(
+            Modifier
+                .width(22.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(Radii.pill))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            TanescoTheme.glass.brandHighlight,
+                        ),
+                    ),
+                )
+                .clearAndSetSemantics { },
+        )
         Text(
             text = title.uppercase(),
             style = MaterialTheme.typography.labelMedium,
@@ -128,11 +146,7 @@ fun SectionHeader(
     }
 }
 
-/**
- * Hairline separator.
- *
- * Marked decorative so screen readers do not announce a line of nothing.
- */
+/** Hairline separator. Marked decorative so screen readers skip it. */
 @Composable
 fun HairlineDivider(
     modifier: Modifier = Modifier,
@@ -143,16 +157,16 @@ fun HairlineDivider(
             .padding(start = inset)
             .clearAndSetSemantics { },
         thickness = ComponentSize.hairline,
-        color = MaterialTheme.colorScheme.outline,
+        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f),
     )
 }
 
 /**
  * A label/value row: the workhorse of the Meter and Settings screens.
  *
- * The value wraps rather than truncating. An account number is compared
- * digit-by-digit against a physical meter, so silently clipping one would be a
- * genuine data-integrity problem, not a cosmetic one.
+ * The value wraps rather than truncating — an account number is compared
+ * digit-by-digit against a physical meter, so clipping it would be a
+ * data-integrity problem, not a cosmetic one.
  */
 @Composable
 fun LabeledValueRow(

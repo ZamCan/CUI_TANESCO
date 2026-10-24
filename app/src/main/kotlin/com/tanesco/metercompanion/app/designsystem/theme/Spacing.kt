@@ -45,13 +45,17 @@ object Spacing {
     val contentMaxWidth: Dp = 640.dp
 }
 
-/** Corner radii. Restrained: this is tooling, not a toy. */
+/**
+ * Corner radii. Generous and consistent: premium glass needs large, calm
+ * curves so highlights can travel around a panel instead of stopping at a
+ * web-like near-square corner.
+ */
 object Radii {
-    val xs: Dp = 6.dp
-    val sm: Dp = 10.dp
-    val md: Dp = 14.dp
-    val lg: Dp = 20.dp
-    val xl: Dp = 28.dp
+    val xs: Dp = 8.dp
+    val sm: Dp = 14.dp
+    val md: Dp = 20.dp
+    val lg: Dp = 26.dp
+    val xl: Dp = 34.dp
     val pill: Dp = 999.dp
 }
 

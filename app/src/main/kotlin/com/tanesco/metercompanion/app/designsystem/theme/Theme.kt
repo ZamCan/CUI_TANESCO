@@ -85,6 +85,50 @@ private val DarkStatusColors = StatusColors(
     onInfoContainer = TanescoPalette.DarkOnInfoContainer,
 )
 
+/**
+ * Glassmorphism tokens. Compose has no offline backdrop-blur primitive that is
+ * safe on every target device, so glass is engineered as layered translucency:
+ * a top light-catch, a translucent body, a gradient hairline and an aurora
+ * wash behind everything. These tokens keep that effect consistent — and keep
+ * the yellow strictly a *brand highlight*, never a status colour.
+ */
+data class GlassColors(
+    val auroraSun: Color,
+    val auroraEnergy: Color,
+    val auroraSky: Color,
+    val fillTop: Color,
+    val fillBottom: Color,
+    val borderLight: Color,
+    val borderDeep: Color,
+    val brandHighlight: Color,
+    val isDark: Boolean,
+)
+
+private val LightGlassColors = GlassColors(
+    auroraSun = Color(0xFFFFCD08).copy(alpha = 0.30f),
+    auroraEnergy = Color(0xFF2DBC5E).copy(alpha = 0.22f),
+    auroraSky = Color(0xFF38BDF8).copy(alpha = 0.14f),
+    fillTop = Color.White.copy(alpha = 0.82f),
+    fillBottom = Color.White.copy(alpha = 0.55f),
+    borderLight = Color.White.copy(alpha = 0.95f),
+    borderDeep = Color(0xFF177A2E).copy(alpha = 0.30f),
+    brandHighlight = Color(0xFFB8860B),
+    isDark = false,
+)
+
+private val DarkGlassColors = GlassColors(
+    auroraSun = Color(0xFFFFCD08).copy(alpha = 0.22f),
+    auroraEnergy = Color(0xFF2DBC5E).copy(alpha = 0.20f),
+    auroraSky = Color(0xFF0EA5E9).copy(alpha = 0.13f),
+    fillTop = Color.White.copy(alpha = 0.11f),
+    fillBottom = Color.White.copy(alpha = 0.04f),
+    borderLight = Color.White.copy(alpha = 0.40f),
+    borderDeep = Color(0xFF2DBC5E).copy(alpha = 0.34f),
+    brandHighlight = Color(0xFFFFCD08),
+    isDark = true,
+)
+
+private val LocalGlassColors = staticCompositionLocalOf { LightGlassColors }
 private val LocalStatusColors = staticCompositionLocalOf { LightStatusColors }
 
 private val LightColors = lightColorScheme(
@@ -182,6 +226,7 @@ fun TanescoTheme(
 
     CompositionLocalProvider(
         LocalStatusColors provides if (darkTheme) DarkStatusColors else LightStatusColors,
+        LocalGlassColors provides if (darkTheme) DarkGlassColors else LightGlassColors,
     ) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColors else LightColors,
@@ -192,10 +237,15 @@ fun TanescoTheme(
     }
 }
 
-/** Accessor for the semantic status palette. */
+/** Accessors for the semantic status palette and the glass token set. */
 object TanescoTheme {
     val status: StatusColors
         @Composable
         @ReadOnlyComposable
         get() = LocalStatusColors.current
+
+    val glass: GlassColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalGlassColors.current
 }

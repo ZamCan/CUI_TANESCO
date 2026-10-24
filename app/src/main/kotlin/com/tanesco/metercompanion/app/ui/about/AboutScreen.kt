@@ -1,22 +1,29 @@
 package com.tanesco.metercompanion.app.ui.about
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.tanesco.metercompanion.app.R
 import com.tanesco.metercompanion.app.designsystem.component.HairlineDivider
 import com.tanesco.metercompanion.app.designsystem.component.LabeledValueRow
 import com.tanesco.metercompanion.app.designsystem.component.NoticePanel
 import com.tanesco.metercompanion.app.designsystem.component.SectionHeader
 import com.tanesco.metercompanion.app.designsystem.component.SurfacePanel
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 import com.tanesco.metercompanion.core.model.AppMetadata
 import com.tanesco.metercompanion.core.model.RuntimeEnvironment
 import com.tanesco.metercompanion.core.time.formatIso8601Utc
@@ -47,6 +54,15 @@ fun AboutScreen(
     ) {
         SurfacePanel {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                Image(
+                    painter = painterResource(
+                        if (TanescoTheme.glass.isDark) R.drawable.brand_lockup else R.drawable.brand_lockup_light,
+                    ),
+                    contentDescription = "TANESCO Meter Companion logo",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .align(Alignment.CenterHorizontally),
+                )
                 SectionHeader(title = "Application")
                 Text(
                     text = "TANESCO Meter Companion",

@@ -3,109 +3,119 @@ package com.tanesco.metercompanion.app.designsystem.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * The application palette.
+ * The application palette — "TANESCO Glass".
  *
- * Design intent
- * -------------
- * This is infrastructure software, not a consumer gadget. The palette is
- * therefore built from warm neutral greys with a single, muted ochre accent
- * rather than the saturated blue-on-dark "technology" look, which reads as
- * decorative rather than professional.
+ * Colour relationships (intentional, taken from the real TANESCO identity):
  *
- * Rules that hold across the whole system:
- *
- *  - surfaces are separated by tone, not by heavy shadows or gradients
- *  - exactly one accent colour carries action; nothing else competes with it
- *  - semantic colours (ready / attention / problem) are reserved for meaning and
- *    are never used decoratively
- *
- * Every pairing below meets WCAG AA (4.5:1) for body text in both schemes.
+ *  - The real TANESCO mark is a deep green + sun-yellow swoosh pair around a
+ *    lightning bolt. This palette is built from exactly those two hues:
+ *    TANESCO green carries action and identity; sun-yellow is a highlight
+ *    reserved for brand moments (logo, aurora wash, selected-navigation ring).
+ *  - Green and yellow are warm-adjacent, so a cool deep-teal ink is used as
+ *    the night base and a soft mint as the light base — this keeps the brand
+ *    pair luminous instead of muddy at glass translucency.
+ *  - Red and amber keep ONLY their semantic meanings (problem / attention).
+ *    Yellow-brand is never used for a warning, and amber-attention is a
+ *    deeper burnt orange so the two can never be confused.
+ *  - Body-text pairings are chosen to meet WCAG AA on their intended glass
+ *    containers; translucent fills always sit over the theme background.
  */
+
+/** Raw brand hues, sampled from and derived from the official TANESCO logo. */
+object TanescoBrand {
+    val DeepGreen   = Color(0xFF0B4D20)   // TANESCO green, darkened for text/action
+    val TanescoGreen = Color(0xFF177A2E)  // logo swoosh green
+    val EnergyGreen = Color(0xFF2DBC5E)   // luminous green for dark glass
+    val SunYellow   = Color(0xFFFFCD08)   // logo swoosh yellow (brand highlight only)
+    val GoldAmber   = Color(0xFFF5A623)   // gradient partner for primary actions
+    val InkTeal     = Color(0xFF04150B)   // night-observatory base
+    val MintMist    = Color(0xFFF0F7EC)   // daylight glass base
+}
+
 internal object TanescoPalette {
 
-    // --- Light scheme ------------------------------------------------------
-    val LightBackground = Color(0xFFFAF8F5)
+    // --- Light scheme: daylight glass -------------------------------------
+    val LightBackground = Color(0xFFEEF6EA)
     val LightSurface = Color(0xFFFFFFFF)
-    val LightSurfaceMuted = Color(0xFFF2EFEA)
-    val LightSurfaceSunken = Color(0xFFEDE9E2)
-    val LightOnSurface = Color(0xFF1B1917)
-    val LightOnSurfaceMuted = Color(0xFF5A544C)
-    val LightOutline = Color(0xFFD9D3C9)
-    val LightOutlineStrong = Color(0xFFBCB4A8)
+    val LightSurfaceMuted = Color(0xFFE4F1DC)
+    val LightSurfaceSunken = Color(0xFFD6E8CC)
+    val LightOnSurface = Color(0xFF0C2313)
+    val LightOnSurfaceMuted = Color(0xFF43584A)
+    val LightOutline = Color(0xFFBFD4B6)
+    val LightOutlineStrong = Color(0xFF8FAE87)
 
-    /** Burnt ochre. White text on this is 5.6:1. */
-    val LightPrimary = Color(0xFF8C4A21)
+    /** TANESCO green. White text on this is ~5.9:1. */
+    val LightPrimary = Color(0xFF146C2E)
     val LightOnPrimary = Color(0xFFFFFFFF)
-    val LightPrimaryContainer = Color(0xFFF6E3D4)
-    val LightOnPrimaryContainer = Color(0xFF34170A)
+    val LightPrimaryContainer = Color(0xFFD3F0D8)
+    val LightOnPrimaryContainer = Color(0xFF062A12)
 
-    // --- Dark scheme -------------------------------------------------------
-    val DarkBackground = Color(0xFF14120F)
-    val DarkSurface = Color(0xFF1C1A16)
-    val DarkSurfaceMuted = Color(0xFF26231E)
-    val DarkSurfaceSunken = Color(0xFF100E0C)
-    val DarkOnSurface = Color(0xFFEDE9E2)
-    val DarkOnSurfaceMuted = Color(0xFFB6AEA2)
-    val DarkOutline = Color(0xFF3D3830)
-    val DarkOutlineStrong = Color(0xFF565046)
+    // --- Dark scheme: emerald-ink glass ------------------------------------
+    val DarkBackground = Color(0xFF04150B)
+    val DarkSurface = Color(0xFF0B2416)
+    val DarkSurfaceMuted = Color(0xFF123420)
+    val DarkSurfaceSunken = Color(0xFF020B05)
+    val DarkOnSurface = Color(0xFFEAF6E9)
+    val DarkOnSurfaceMuted = Color(0xFFA9C3AC)
+    val DarkOutline = Color(0xFF274A31)
+    val DarkOutlineStrong = Color(0xFF3D6B4B)
 
-    val DarkPrimary = Color(0xFFE9A05C)
-    val DarkOnPrimary = Color(0xFF3A2008)
-    val DarkPrimaryContainer = Color(0xFF5A3016)
-    val DarkOnPrimaryContainer = Color(0xFFF8DCC3)
+    val DarkPrimary = Color(0xFF7DEFA0)
+    val DarkOnPrimary = Color(0xFF04240F)
+    val DarkPrimaryContainer = Color(0xFF14532D)
+    val DarkOnPrimaryContainer = Color(0xFFD8F7DE)
 
-    // --- Semantic: ready / success ----------------------------------------
-    val LightReady = Color(0xFF2F6B3A)
+    // --- Semantic: ready / success -----------------------------------------
+    val LightReady = Color(0xFF177245)
     val LightOnReady = Color(0xFFFFFFFF)
-    val LightReadyContainer = Color(0xFFDDEEDD)
-    val LightOnReadyContainer = Color(0xFF12290F)
+    val LightReadyContainer = Color(0xFFD9F2E2)
+    val LightOnReadyContainer = Color(0xFF07301A)
 
-    val DarkReady = Color(0xFF8FCB98)
-    val DarkOnReady = Color(0xFF12300F)
-    val DarkReadyContainer = Color(0xFF23401C)
-    val DarkOnReadyContainer = Color(0xFFCDE9CF)
+    val DarkReady = Color(0xFF86E3A9)
+    val DarkOnReady = Color(0xFF052A15)
+    val DarkReadyContainer = Color(0xFF16452A)
+    val DarkOnReadyContainer = Color(0xFFD5F5DF)
 
-    // --- Semantic: attention / research ------------------------------------
-    // Amber rather than yellow: readable on light surfaces without the
-    // "warning tape" look that pure yellow produces.
-    val LightAttention = Color(0xFF7A5200)
+    // --- Semantic: attention / research -------------------------------------
+    // Burnt orange-amber, deliberately NOT the brand sun-yellow.
+    val LightAttention = Color(0xFF9A5900)
     val LightOnAttention = Color(0xFFFFFFFF)
-    val LightAttentionContainer = Color(0xFFFBEBC8)
-    val LightOnAttentionContainer = Color(0xFF2B1C00)
+    val LightAttentionContainer = Color(0xFFFEEDC9)
+    val LightOnAttentionContainer = Color(0xFF341C00)
 
-    val DarkAttention = Color(0xFFE0B65C)
-    val DarkOnAttention = Color(0xFF2E2000)
-    val DarkAttentionContainer = Color(0xFF453208)
-    val DarkOnAttentionContainer = Color(0xFFF6E2B4)
+    val DarkAttention = Color(0xFFFFC266)
+    val DarkOnAttention = Color(0xFF3A2100)
+    val DarkAttentionContainer = Color(0xFF54360A)
+    val DarkOnAttentionContainer = Color(0xFFFFE7BC)
 
-    // --- Semantic: problem / error -----------------------------------------
-    val LightProblem = Color(0xFF9E2A20)
+    // --- Semantic: problem / error ------------------------------------------
+    val LightProblem = Color(0xFFB3261E)
     val LightOnProblem = Color(0xFFFFFFFF)
-    val LightProblemContainer = Color(0xFFFBE0DD)
-    val LightOnProblemContainer = Color(0xFF3B0A06)
+    val LightProblemContainer = Color(0xFFFBE3E0)
+    val LightOnProblemContainer = Color(0xFF400A06)
 
-    val DarkProblem = Color(0xFFF08A80)
-    val DarkOnProblem = Color(0xFF3B0A06)
-    val DarkProblemContainer = Color(0xFF4E1712)
-    val DarkOnProblemContainer = Color(0xFFFBDAD6)
+    val DarkProblem = Color(0xFFFF9A8F)
+    val DarkOnProblem = Color(0xFF400A06)
+    val DarkProblemContainer = Color(0xFF5A1A14)
+    val DarkOnProblemContainer = Color(0xFFFFDCD7)
 
-    // --- Semantic: neutral / unavailable -----------------------------------
-    val LightNeutral = Color(0xFF5A544C)
+    // --- Semantic: neutral / unavailable ------------------------------------
+    val LightNeutral = Color(0xFF4A5A4F)
     val LightOnNeutral = Color(0xFFFFFFFF)
-    val LightNeutralContainer = Color(0xFFEAE5DD)
-    val LightOnNeutralContainer = Color(0xFF2A251F)
+    val LightNeutralContainer = Color(0xFFE2EADF)
+    val LightOnNeutralContainer = Color(0xFF16241A)
 
-    val DarkNeutral = Color(0xFFB6AEA2)
-    val DarkOnNeutral = Color(0xFF2A251F)
-    val DarkNeutralContainer = Color(0xFF38332C)
-    val DarkOnNeutralContainer = Color(0xFFE2DCD2)
+    val DarkNeutral = Color(0xFFB9CCBA)
+    val DarkOnNeutral = Color(0xFF16241A)
+    val DarkNeutralContainer = Color(0xFF24382A)
+    val DarkOnNeutralContainer = Color(0xFFE3EFE2)
 
-    // --- Information -------------------------------------------------------
-    val LightInfo = Color(0xFF3F5A72)
-    val LightInfoContainer = Color(0xFFDDE7F0)
-    val LightOnInfoContainer = Color(0xFF12212E)
+    // --- Information ---------------------------------------------------------
+    val LightInfo = Color(0xFF166A8A)
+    val LightInfoContainer = Color(0xFFD8EFF7)
+    val LightOnInfoContainer = Color(0xFF042633)
 
-    val DarkInfo = Color(0xFF9CC0D8)
-    val DarkInfoContainer = Color(0xFF27394A)
-    val DarkOnInfoContainer = Color(0xFFD5E6F2)
+    val DarkInfo = Color(0xFF8FD6F2)
+    val DarkInfoContainer = Color(0xFF17445A)
+    val DarkOnInfoContainer = Color(0xFFD8F2FC)
 }

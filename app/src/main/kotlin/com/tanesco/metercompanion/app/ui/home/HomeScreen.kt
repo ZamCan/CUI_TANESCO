@@ -12,20 +12,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.tanesco.metercompanion.app.designsystem.component.AccentPanel
+import com.tanesco.metercompanion.app.designsystem.component.BrandMark
+import com.tanesco.metercompanion.app.designsystem.component.UnicodeBadge
 import com.tanesco.metercompanion.app.designsystem.component.EmptyState
 import com.tanesco.metercompanion.app.designsystem.component.HairlineDivider
 import com.tanesco.metercompanion.app.designsystem.component.LabeledValueRow
@@ -38,6 +33,7 @@ import com.tanesco.metercompanion.app.designsystem.component.StatusPill
 import com.tanesco.metercompanion.app.designsystem.component.SurfacePanel
 import com.tanesco.metercompanion.app.designsystem.component.style
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 import com.tanesco.metercompanion.connection.ConnectionState
 import com.tanesco.metercompanion.core.diagnostics.DiagnosticStatus
 import com.tanesco.metercompanion.core.model.AppEvent
@@ -119,6 +115,24 @@ fun HomeScreen(
 private fun ApplicationStatusCard(isLoading: Boolean, hasMeter: Boolean, tokenCount: Int) {
     SurfacePanel {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            ) {
+                BrandMark(size = 58.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = "TANESCO Meter Companion",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = "⚡ Local-first · every feature works offline",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TanescoTheme.glass.brandHighlight,
+                    )
+                }
+            }
             SectionHeader(title = "Application")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -252,21 +266,21 @@ private fun ShortcutsCard(
         SurfacePanel(contentPadding = PaddingValues(Spacing.sm)) {
             Column {
                 ShortcutRow(
-                    icon = Icons.Filled.Settings,
+                    glyph = "⚡",
                     title = "Meter",
                     subtitle = "Identity, readings and connection state",
                     onClick = onOpenMeter,
                 )
                 HairlineDivider()
                 ShortcutRow(
-                    icon = Icons.Filled.Lock,
+                    glyph = "▦",
                     title = "Token Center",
                     subtitle = "Enter and review tokens",
                     onClick = onOpenTokens,
                 )
                 HairlineDivider()
                 ShortcutRow(
-                    icon = Icons.Filled.List,
+                    glyph = "◷",
                     title = "Activity",
                     subtitle = "Everything this application has recorded",
                     onClick = onOpenActivity,
@@ -278,7 +292,7 @@ private fun ShortcutsCard(
 
 @Composable
 private fun ShortcutRow(
-    icon: ImageVector,
+    glyph: String,
     title: String,
     subtitle: String,
     onClick: () -> Unit,
@@ -288,11 +302,10 @@ private fun ShortcutRow(
         subtitle = subtitle,
         onClick = onClick,
         leading = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp),
+            UnicodeBadge(
+                glyph = glyph,
+                tint = MaterialTheme.colorScheme.primary,
+                size = 40.dp,
             )
         },
         trailing = { RowChevron() },
@@ -301,10 +314,10 @@ private fun ShortcutRow(
 
 @Composable
 private fun RowChevron() {
-    Icon(
-        imageVector = Icons.Filled.KeyboardArrowRight,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    Text(
+        text = "›",
+        style = MaterialTheme.typography.headlineSmall,
+        color = TanescoTheme.glass.brandHighlight,
     )
 }
 
@@ -395,6 +408,7 @@ private fun MoreCard(
                     title = "Settings",
                     subtitle = "Meters, appearance, units and local data",
                     onClick = onOpenSettings,
+                    leading = { UnicodeBadge("⚙", MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
                 HairlineDivider()
@@ -402,6 +416,7 @@ private fun MoreCard(
                     title = "Diagnostics",
                     subtitle = "Subsystem health and connection support",
                     onClick = onOpenDiagnostics,
+                    leading = { UnicodeBadge("✚", MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
                 HairlineDivider()
@@ -409,6 +424,7 @@ private fun MoreCard(
                     title = "About",
                     subtitle = "Version and technical information",
                     onClick = onOpenAbout,
+                    leading = { UnicodeBadge("i", MaterialTheme.colorScheme.primary, size = 40.dp) },
                     trailing = { RowChevron() },
                 )
             }

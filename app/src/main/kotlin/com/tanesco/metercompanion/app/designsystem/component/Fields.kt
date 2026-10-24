@@ -76,6 +76,11 @@ fun LabeledTextField(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                 errorBorderColor = MaterialTheme.colorScheme.error,
+                // Recessed glass: fields sit *in* the pane, panels sit *on* it.
+                focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.38f),
+                errorContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.45f),
+                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.25f),
             ),
         )
 

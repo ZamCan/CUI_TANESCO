@@ -113,7 +113,12 @@ fun StatusPill(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(Radii.pill))
-            .background(style.container)
+            .background(
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    listOf(style.container, style.container.copy(alpha = 0.62f)),
+                ),
+            )
+            .border(1.dp, style.accent.copy(alpha = 0.45f), RoundedCornerShape(Radii.pill))
             .padding(horizontal = Spacing.md, vertical = Spacing.xs + Spacing.xxs)
             .semantics { contentDescription = "$label, status ${style.label}" },
         verticalAlignment = Alignment.CenterVertically,

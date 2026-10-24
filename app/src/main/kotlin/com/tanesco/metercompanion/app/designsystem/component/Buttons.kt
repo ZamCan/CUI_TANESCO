@@ -1,5 +1,7 @@
 package com.tanesco.metercompanion.app.designsystem.component
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -18,6 +20,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -25,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.tanesco.metercompanion.app.designsystem.theme.ComponentSize
 import com.tanesco.metercompanion.app.designsystem.theme.Radii
 import com.tanesco.metercompanion.app.designsystem.theme.Spacing
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoBrand
+import com.tanesco.metercompanion.app.designsystem.theme.TanescoTheme
 
 /**
  * The primary action of a screen.
@@ -41,14 +48,38 @@ fun PrimaryActionButton(
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {
+    // Energy gradient: luminous TANESCO green flowing into deep green. The
+    // Material Button itself is transparent so the gradient *is* the surface;
+    // ripple, focus and disabled behaviour stay Material-correct.
+    val shape = RoundedCornerShape(Radii.sm)
     Button(
         onClick = onClick,
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(Radii.sm),
-        colors = ButtonDefaults.buttonColors(),
+        shape = shape,
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = Color.White,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
         contentPadding = PaddingValues(horizontal = Spacing.xl, vertical = Spacing.md),
         modifier = modifier
             .defaultMinSize(minHeight = ComponentSize.buttonHeight)
+            .shadow(if (enabled && !loading) 10.dp else 0.dp, shape, spotColor = TanescoBrand.EnergyGreen.copy(alpha = 0.45f))
+            .clip(shape)
+            .then(
+                if (enabled && !loading) {
+                    Modifier.background(
+                        Brush.linearGradient(
+                            listOf(TanescoBrand.EnergyGreen, TanescoBrand.TanescoGreen, TanescoBrand.DeepGreen),
+                        ),
+                    )
+                } else {
+                    Modifier
+                },
+            )
+            .border(1.dp, Color.White.copy(alpha = 0.28f), shape)
             .busySemantics(loading),
     ) {
         ButtonLabel(text = text, loading = loading)
@@ -70,6 +101,19 @@ fun SecondaryActionButton(
         onClick = onClick,
         enabled = enabled && !loading,
         shape = RoundedCornerShape(Radii.sm),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = TanescoTheme.glass.fillBottom,
+            contentColor = MaterialTheme.colorScheme.primary,
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            Brush.linearGradient(
+                listOf(
+                    TanescoTheme.glass.borderLight,
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+                ),
+            ),
+        ),
         contentPadding = PaddingValues(horizontal = Spacing.xl, vertical = Spacing.md),
         modifier = modifier
             .defaultMinSize(minHeight = ComponentSize.buttonHeight)
